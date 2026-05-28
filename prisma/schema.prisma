@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts   ConnectedAccount[]
+  activities StravaActivity[]
+  analyses   ActivityAnalysis[]
+}
+
+model ConnectedAccount {
+  id             String   @id @default(cuid())
+  userId         String
+  provider       String
+  providerUserId String
+  displayName    String?
+  scopes         String?
+  status         String   @default("connected")
+  lastSyncedAt   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token OAuthToken?
+
+  @@unique([provider, providerUserId])
+  @@index([userId, provider])
+}
+
+model OAuthToken {
+  id                 String    @id @default(cuid())
+  connectedAccountId String    @unique
+  accessToken        String
+  refreshToken       String?
+  expiresAt          DateTime?
+  tokenType          String?
+  scope              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  account ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+}
+
+model StravaActivity {
+  id                   String   @id @default(cuid())
+  userId               String
+  stravaId             String
+  name                 String
+  type                 String?
+  sportType            String?
+  startDate            DateTime
+  timezone             String?
+  distanceMeters       Float?
+  movingTimeSec        Int?
+  elapsedTimeSec       Int?
+  totalElevationGain   Float?
+  averageSpeed         Float?
+  maxSpeed             Float?
+  averageHeartrate     Float?
+  maxHeartrate         Float?
+  averageWatts         Float?
+  weightedAverageWatts Float?
+  averageCadence       Float?
+  calories             Float?
+  summaryPolyline      String?
+  rawSummaryJson       String?
+  rawDetailJson        String?
+  computedMetrics      String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stream   StravaActivityStream?
+  analyses ActivityAnalysis[]
+
+  @@unique([userId, stravaId])
+  @@index([userId, startDate])
+}
+
+model StravaActivityStream {
+  id            String   @id @default(cuid())
+  activityId    String   @unique
+  streamsJson   String
+  availableKeys String?
+  createdAt     DateTime @default(now())
+
+  activity StravaActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+}
+
+model ActivityAnalysis {
+  id           String   @id @default(cuid())
+  userId       String
+  activityId   String
+  provider     String
+  model        String
+  inputSummary String
+  analysisJson String
+  analysisText String?
+  confidence   Float?
+  createdAt    DateTime @default(now())
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity StravaActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([activityId, createdAt])
+  @@index([userId, createdAt])
+}
