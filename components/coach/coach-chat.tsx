@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { ChatMessage } from "@/components/coach/chat-message";
 import { ChatSkeleton } from "@/components/coach/chat-skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Button } from "@/components/ui/button";
 import { useActivitiesQuery } from "@/lib/api/activities";
 import { useCoachChatMutation } from "@/lib/api/coach";
 import { useLlmHealthQuery } from "@/lib/api/settings";
@@ -44,9 +45,9 @@ export function CoachChat() {
   }
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-5 px-4 py-8 lg:grid-cols-[280px_1fr]">
-      <aside className="space-y-4">
-        <section className="rounded-3xl border bg-white p-4 shadow-soft">
+    <main className="cc-container grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <section className="cc-card p-4">
           <h2 className="font-semibold">Coach context</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             <StatusPill tone={healthQuery.data?.ollama.ok ? "green" : "red"}>{healthQuery.data?.ollama.ok ? "model ready" : "model offline"}</StatusPill>
@@ -56,7 +57,7 @@ export function CoachChat() {
           <select
             value={activityId ?? ""}
             onChange={(event) => setActivityId(event.target.value || null)}
-            className="mt-2 w-full rounded-2xl border bg-white px-3 py-2 text-sm"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand/60"
           >
             <option value="">No activity selected</option>
             {activities.map((activity) => (
@@ -66,9 +67,10 @@ export function CoachChat() {
         </section>
       </aside>
 
-      <section className="flex min-h-[72vh] flex-col rounded-3xl border bg-white shadow-soft">
-        <div className="border-b border-slate-100 p-5">
-          <h1 className="text-2xl font-semibold">AI Coach Chat</h1>
+      <section className="cc-card flex min-h-[72vh] flex-col overflow-hidden">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <p className="cc-section-label">Coach Agent</p>
+          <h1 className="mt-1 text-2xl font-semibold">AI Coach Chat</h1>
           <p className="mt-1 text-sm text-muted">Ask general sports questions or attach a synced ride for context. Not medical advice.</p>
         </div>
 
@@ -76,7 +78,7 @@ export function CoachChat() {
           {messages.length === 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {prompts.map((prompt) => (
-                <button key={prompt} onClick={() => setDraft(prompt)} className="rounded-2xl border bg-slate-50 p-4 text-left text-sm font-medium transition hover:border-brand/40 hover:bg-orange-50">
+                <button key={prompt} onClick={() => setDraft(prompt)} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-left text-sm font-medium transition hover:-translate-y-0.5 hover:border-brand/35 hover:bg-orange-50">
                   {prompt}
                 </button>
               ))}
@@ -88,16 +90,16 @@ export function CoachChat() {
         </div>
 
         <form onSubmit={submit} className="border-t border-slate-100 p-4">
-          <div className="flex gap-2 rounded-3xl border bg-slate-50 p-2">
+          <div className="flex gap-2 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-2 transition focus-within:border-brand/50 focus-within:bg-white">
             <input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Ask about training, recovery, nutrition, gear, or this ride…"
               className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none"
             />
-            <button disabled={chatMutation.isPending} className="rounded-2xl bg-brand px-4 py-2 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60">
+            <Button disabled={chatMutation.isPending}>
               Send
-            </button>
+            </Button>
           </div>
         </form>
       </section>

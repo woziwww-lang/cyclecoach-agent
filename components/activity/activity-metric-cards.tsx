@@ -18,7 +18,7 @@ export function ActivityMetricCards({ activity }: { activity: StravaActivity }) 
   return (
     <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {metrics.map(([label, value]) => (
-        <div key={label} className="rounded-lg border bg-white p-4 shadow-soft">
+        <div key={label} className="cc-card p-4 shadow-none">
           <p className="text-sm text-muted">{label}</p>
           <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
         </div>

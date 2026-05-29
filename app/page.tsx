@@ -34,23 +34,9 @@ export default async function HomePage() {
               {t.subtitle}
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {user ? (
-              <a className="rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 active:scale-95" href={latestRide ? `/dashboard?activityId=${latestRide.id}` : "/dashboard"}>
-                {latestRide ? t.analyzeLatest : t.openDashboard}
-              </a>
-            ) : (
-              <a className="rounded-2xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 active:scale-95" href="/register">
-                {t.createAccount}
-              </a>
-            )}
-            <a className="rounded-2xl border bg-white px-5 py-3 text-sm font-semibold shadow-sm transition hover:bg-slate-50" href="/coach">
-              {t.askCoach}
-            </a>
-          </div>
         </div>
 
-        <aside className="rounded-3xl border bg-white p-5 shadow-soft">
+        <aside className="cc-card p-5">
           <h2 className="font-semibold">{t.localStatus}</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <StatusRow label="Strava session" value={user ? "connected" : "not connected"} />
@@ -63,13 +49,16 @@ export default async function HomePage() {
               Start Ollama and pull the configured model. For 7B: <code>ollama pull qwen2.5:7b</code>
             </p>
           ) : null}
+          <p className="mt-4 border-t border-slate-100 pt-4 text-sm leading-6 text-muted">
+            {user ? (latestRide ? "Next step: open Ride Dashboard and review your latest synced ride." : "Next step: connect Strava from My Page, then sync your first activities.") : "Next step: create a local account, then manage Strava from My Page."}
+          </p>
         </aside>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <ActionCard href="/coach" title={t.actionTalk} description={t.actionTalkDesc} icon="✦" meta="chat" />
         <ActionCard href="/dashboard" title={t.actionDashboard} description={t.actionDashboardDesc} icon="⌁" meta="data" primary />
-        <ActionCard href="/dashboard?focus=latest" title={t.actionLatest} description={t.actionLatestDesc} icon="↯" meta={latestRide ? "ready" : "needs sync"} />
+        <ActionCard href="/planner" title={t.actionPlan} description={t.actionPlanDesc} icon="◎" meta="workout" />
         <ActionCard href={user ? "/me" : "/register"} title={t.actionMe} description={t.actionMeDesc} icon="◌" meta="settings" />
       </section>
     </main>

@@ -7,6 +7,7 @@ export const dictionaries = {
       home: "Home",
       coach: "Coach",
       dashboard: "Dashboard",
+      planner: "Planner",
       me: "My Page",
       login: "Log in",
       signup: "Sign up",
@@ -32,8 +33,8 @@ export const dictionaries = {
       actionTalkDesc: "Ask training, recovery, nutrition, equipment, or ride planning questions.",
       actionDashboard: "Ride Dashboard",
       actionDashboardDesc: "Your single training data center for activities, maps, metrics, and analysis.",
-      actionLatest: "Analyze Latest Ride",
-      actionLatestDesc: "Jump straight into the most recent synced ride and ask the coach to review it.",
+      actionPlan: "Plan Next Ride",
+      actionPlanDesc: "Get a smart workout plan for your next ride.",
       actionMe: "My Page",
       actionMeDesc: "Manage Strava, language, local Ollama model, privacy, and local cache settings."
     }
@@ -43,6 +44,7 @@ export const dictionaries = {
       home: "首页",
       coach: "教练",
       dashboard: "骑行中心",
+      planner: "计划",
       me: "我的",
       login: "登录",
       signup: "注册",
@@ -68,8 +70,8 @@ export const dictionaries = {
       actionTalkDesc: "直接询问训练、恢复、补给、装备或路线问题。",
       actionDashboard: "Ride Dashboard",
       actionDashboardDesc: "活动列表、地图、指标和 AI 分析的统一训练数据中心。",
-      actionLatest: "Analyze Latest Ride",
-      actionLatestDesc: "直接进入最近一次同步骑行，并让 AI 教练分析。",
+      actionPlan: "Plan Next Ride",
+      actionPlanDesc: "为下一次骑行生成智能训练安排。",
       actionMe: "My Page",
       actionMeDesc: "管理 Strava、语言、本地 Ollama 模型、隐私和缓存。"
     }
@@ -79,6 +81,7 @@ export const dictionaries = {
       home: "ホーム",
       coach: "コーチ",
       dashboard: "ライド",
+      planner: "プラン",
       me: "マイページ",
       login: "ログイン",
       signup: "登録",
@@ -104,8 +107,8 @@ export const dictionaries = {
       actionTalkDesc: "トレーニング、回復、補給、機材、ルートについて質問できます。",
       actionDashboard: "Ride Dashboard",
       actionDashboardDesc: "アクティビティ、地図、指標、AI 分析をまとめた中心画面です。",
-      actionLatest: "Analyze Latest Ride",
-      actionLatestDesc: "最新の同期済みライドを開き、AI コーチに分析させます。",
+      actionPlan: "Plan Next Ride",
+      actionPlanDesc: "次のライドに向けたスマートな練習プランを作成します。",
       actionMe: "My Page",
       actionMeDesc: "Strava、言語、Ollama モデル、プライバシー、キャッシュを管理します。"
     }

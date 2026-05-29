@@ -121,6 +121,7 @@ pnpm app:health
 - `/` Home: status-aware entry points.
 - `/coach` AI Coach Chat: general sports chat, optionally with activity context.
 - `/dashboard` Training data center: activity list, selected ride detail, route map, and AI analysis.
+- `/planner` Plan Next Ride: quick next-workout planning with rule-based logic and optional local Ollama coach summary.
 - `/me` My Page: Strava, language, local LLM model, and privacy settings.
 - `/activities` redirects to `/dashboard` to avoid duplicate product paths.
 
@@ -162,12 +163,16 @@ en, zh, ja
 
 Current coverage starts with global navigation and Home. The same dictionary pattern should be extended page by page before introducing a full framework like `next-intl`.
 
+## UI/UX structure
+
+See [`docs/ui-ux.md`](docs/ui-ux.md) for page responsibilities, final Home cards, visual tokens, and UX state rules.
+
 ## State management
 
 - UI state: Zustand stores in `lib/stores`.
 - API/server state: TanStack Query hooks in `lib/api`.
 - Settings forms: React Hook Form + Zod.
-- URL state: `/dashboard?activityId=...` and `/dashboard?focus=latest`.
+- Dashboard state: the latest synced ride is selected by default; users switch rides inside the dashboard.
 - AI state: loading skeletons and rule-based fallback if Ollama is offline or returns invalid JSON.
 
 ## SQLite now, PostGIS later

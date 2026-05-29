@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { useLlmHealthQuery, useSettingsQuery, useUpdateSettingsMutation } from "@/lib/api/settings";
 
@@ -30,7 +31,7 @@ export function LlmSettingsCard() {
   }
 
   return (
-    <section className="rounded-3xl border bg-white p-5 shadow-soft">
+    <section className="cc-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold">Local LLM</h2>
@@ -44,20 +45,21 @@ export function LlmSettingsCard() {
       <form onSubmit={form.handleSubmit(submit)} className="mt-5 grid gap-3">
         <label className="grid gap-1 text-sm font-medium">
           Ollama base URL
-          <input className="rounded-2xl border bg-white px-3 py-2 font-normal" {...form.register("ollamaBaseUrl")} />
+          <input className="rounded-2xl border border-slate-200 bg-white px-3 py-2 font-normal outline-none transition focus:border-brand/60" {...form.register("ollamaBaseUrl")} />
         </label>
         <label className="grid gap-1 text-sm font-medium">
           Model name
-          <input className="rounded-2xl border bg-white px-3 py-2 font-normal" placeholder="qwen2.5:7b" {...form.register("ollamaModel")} />
+          <input className="rounded-2xl border border-slate-200 bg-white px-3 py-2 font-normal outline-none transition focus:border-brand/60" placeholder="qwen2.5:7b" {...form.register("ollamaModel")} />
         </label>
         <div className="flex flex-wrap gap-2 text-xs text-muted">
           <span className="rounded-full bg-slate-100 px-2 py-1">7B: qwen2.5:7b</span>
           <span className="rounded-full bg-slate-100 px-2 py-1">low: qwen2.5:3b</span>
           <span className="rounded-full bg-slate-100 px-2 py-1">tiny: qwen2.5:0.5b</span>
         </div>
-        <button disabled={updateSettings.isPending} className="mt-2 rounded-2xl bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+        <Button disabled={updateSettings.isPending} className="mt-2">
           {updateSettings.isPending ? "Saving…" : "Save LLM settings"}
-        </button>
+        </Button>
+        {updateSettings.isSuccess ? <p className="text-sm font-medium text-emerald-700">Settings saved.</p> : null}
       </form>
 
       {!healthQuery.data?.ollama.ok ? (

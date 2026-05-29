@@ -18,7 +18,7 @@ export function DashboardSummary({ activities }: { activities: StravaActivity[] 
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
-        <div key={card.label} className="rounded-3xl border bg-white p-5 shadow-soft">
+        <div key={card.label} className="cc-card p-5">
           <p className="text-sm font-medium text-muted">{card.label}</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums">{card.value}</p>
           <p className="mt-1 text-xs text-muted">{card.note}</p>

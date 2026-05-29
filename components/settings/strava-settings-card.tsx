@@ -1,6 +1,7 @@
 "use client";
 
 import { StatusPill } from "@/components/ui/status-pill";
+import { ButtonLink, buttonClassName } from "@/components/ui/button";
 import { useStravaStatusQuery } from "@/lib/api/strava";
 
 export function StravaSettingsCard() {
@@ -8,7 +9,7 @@ export function StravaSettingsCard() {
   const connected = Boolean(statusQuery.data?.connected);
 
   return (
-    <section className="rounded-3xl border bg-white p-5 shadow-soft">
+    <section className="cc-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold">Strava</h2>
@@ -21,11 +22,11 @@ export function StravaSettingsCard() {
           <p><span className="text-muted">Athlete:</span> {statusQuery.data?.account?.displayName ?? "Strava rider"}</p>
           <p><span className="text-muted">Last sync:</span> {statusQuery.data?.account?.lastSyncedAt ? new Date(statusQuery.data.account.lastSyncedAt).toLocaleString() : "not synced yet"}</p>
           <form action="/api/auth/strava/disconnect" method="post">
-            <button className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">Disconnect Strava</button>
+            <button className={buttonClassName("danger")}>Disconnect Strava</button>
           </form>
         </div>
       ) : (
-        <a href="/api/auth/strava" className="mt-4 inline-flex rounded-2xl bg-brand px-4 py-2 text-sm font-semibold text-white">Connect Strava</a>
+        <ButtonLink href="/api/auth/strava" className="mt-4">Connect Strava</ButtonLink>
       )}
     </section>
   );

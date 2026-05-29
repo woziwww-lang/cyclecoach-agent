@@ -1,4 +1,5 @@
 import { getServerI18n } from "@/lib/i18n/server";
+import { DesktopNavLinks } from "@/components/layout/nav-links";
 
 export async function TopNav() {
   const { user, dictionary } = await getServerI18n();
@@ -6,6 +7,7 @@ export async function TopNav() {
     { href: "/", label: dictionary.nav.home },
     { href: "/coach", label: dictionary.nav.coach },
     { href: "/dashboard", label: dictionary.nav.dashboard },
+    { href: "/planner", label: dictionary.nav.planner },
     { href: "/me", label: dictionary.nav.me }
   ];
 
@@ -16,13 +18,7 @@ export async function TopNav() {
           <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white">CC</span>
           <span>CycleCoach</span>
         </a>
-        <div className="hidden items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 text-sm text-muted md:flex">
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href} className="rounded-full px-3 py-1.5 transition hover:bg-white hover:text-ink hover:shadow-sm">
-              {item.label}
-            </a>
-          ))}
-        </div>
+        <DesktopNavLinks items={navItems} />
         {user ? (
           <form action="/api/auth/logout" method="post" className="hidden items-center gap-2 text-sm md:flex">
             <span className="max-w-36 truncate text-muted">{user.name ?? user.email ?? "Rider"}</span>

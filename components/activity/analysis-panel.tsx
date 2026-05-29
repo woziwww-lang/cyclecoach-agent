@@ -2,8 +2,11 @@
 
 import type { ActivityAnalysis } from "@prisma/client";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { AnalysisResultCard } from "@/components/ai/analysis-result-card";
 import { AnalysisSkeleton } from "@/components/ai/analysis-skeleton";
+import { useAnalyzeActivityMutation } from "@/lib/api/activities";
 
 export function AnalysisPanel({
   activityId,
@@ -14,43 +17,39 @@ export function AnalysisPanel({
 }) {
   const [analysisText, setAnalysisText] = useState(latestAnalysis?.analysisText ?? "");
   const [analysis, setAnalysis] = useState<ActivityAnalysis | null>(latestAnalysis);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const analyzeMutation = useAnalyzeActivityMutation(activityId);
 
   async function analyze() {
-    setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/activities/${activityId}/analyze`, { method: "POST" });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Analysis failed");
-      setAnalysisText(json.analysis.analysisText);
-      setAnalysis(json.analysis);
+      const response = await analyzeMutation.mutateAsync();
+      setAnalysisText(response.analysis.analysisText ?? "");
+      setAnalysis(response.analysis);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
     }
   }
 
+  const loading = analyzeMutation.isPending;
+
   return (
     <aside className="space-y-4">
-      <div className="rounded-3xl border bg-white p-4 shadow-soft">
-      <div className="flex items-center justify-between gap-3">
+      <div className="cc-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold">Coach analysis</h2>
           <p className="text-sm text-muted">Deterministic metrics first, local Ollama explanation second.</p>
         </div>
-        <button
+        <Button
           onClick={analyze}
           disabled={loading}
-          className="rounded-2xl bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 active:scale-95 disabled:opacity-60"
         >
           {loading ? "Analyzing…" : "Ask AI"}
-        </button>
+        </Button>
       </div>
 
-      {error ? <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
+      {error ? <div className="mt-4"><ErrorState title="Analysis failed" description={error} actionLabel="Try again" onRetry={analyze} /></div> : null}
       </div>
 
       {loading ? <AnalysisSkeleton /> : <AnalysisResultCard analysis={analysis} />}

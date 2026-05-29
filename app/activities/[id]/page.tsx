@@ -5,6 +5,7 @@ import { ActivityMetricCards } from "@/components/activity/activity-metric-cards
 import { ActivityMap } from "@/components/map/activity-map";
 import { AnalysisPanel } from "@/components/activity/analysis-panel";
 import { StreamSummary } from "@/components/charts/stream-summary";
+import { buttonClassName } from "@/components/ui/button";
 
 export default async function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
@@ -22,15 +23,15 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
   if (!activity) notFound();
 
   return (
-    <main className="mx-auto max-w-7xl space-y-5 px-4 py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <main className="cc-container space-y-5">
+      <div className="cc-card-muted flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div>
-          <a className="text-sm font-semibold text-brand" href={`/dashboard?activityId=${activity.id}`}>Back to dashboard</a>
+          <a className="text-sm font-semibold text-brand" href="/dashboard">Back to dashboard</a>
           <h1 className="mt-1 text-3xl font-semibold">{activity.name}</h1>
           <p className="text-muted">{activity.startDate.toLocaleString()}</p>
         </div>
         <form action={`/api/strava/activities/${activity.id}`} method="post">
-          <button className="rounded-2xl border bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-slate-50">Refresh detail & streams</button>
+          <button className={buttonClassName("secondary")}>Refresh detail & streams</button>
         </form>
       </div>
 
