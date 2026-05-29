@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "../lib/auth/password";
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,8 @@ async function main() {
     update: {},
     create: {
       id: "local-demo-user",
+      email: "demo@cyclecoach.local",
+      passwordHash: await hashPassword("password123"),
       name: "Local Demo Rider"
     }
   });

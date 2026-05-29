@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppShell } from "@/components/layout/app-shell";
 
 export const metadata: Metadata = {
   title: "CycleCoach Agent",
@@ -10,20 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen bg-page">
-          <header className="border-b bg-white">
-            <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-              <a href="/" className="text-lg font-semibold">
-                CycleCoach Agent
-              </a>
-              <div className="flex gap-4 text-sm text-muted">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/activities">Activities</a>
-              </div>
-            </nav>
-          </header>
-          {children}
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

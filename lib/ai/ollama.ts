@@ -26,12 +26,17 @@ export class OllamaProvider implements AiProvider {
   }
 }
 
-export async function getOllamaHealth() {
-  const baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
+export async function getOllamaHealth(config?: { baseUrl?: string; model?: string }) {
+  const baseUrl = config?.baseUrl ?? process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
+  const model = config?.model ?? process.env.OLLAMA_MODEL ?? "qwen2.5:7b";
   try {
     const res = await fetch(`${baseUrl}/api/tags`, { cache: "no-store" });
-    return { ok: res.ok };
-  } catch {
-    return { ok: false };
+    if (!res.ok) return { ok: false, model, error: `OLLAMA_HTTP_${res.status}` };
+    const json = await res.json();
+    const models = Array.isArray(json.models) ? json.models : [];
+    const hasModel = models.some((item: { name?: string; model?: string }) => item.name === model || item.model === model);
+    return { ok: hasModel, model, missingModel: !hasModel, availableModels: models.map((item: { name?: string }) => item.name).filter(Boolean) };
+  } catch (error) {
+    return { ok: false, model, error: error instanceof Error ? error.message : String(error) };
   }
 }

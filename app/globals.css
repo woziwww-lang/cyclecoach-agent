@@ -1,3 +1,5 @@
+@import "leaflet/dist/leaflet.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +10,9 @@ body {
 }
 
 body {
-  background: #f7f8fa;
+  background:
+    radial-gradient(circle at top left, rgba(252, 76, 2, 0.08), transparent 34rem),
+    linear-gradient(180deg, #fbfcfd 0%, #f6f8fb 100%);
   color: #111827;
 }
 
@@ -20,4 +24,14 @@ a {
 .leaflet-container {
   height: 100%;
   width: 100%;
+  font-family: inherit;
+}
+
+::selection {
+  background: rgba(252, 76, 2, 0.18);
+}
+
+.cc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }

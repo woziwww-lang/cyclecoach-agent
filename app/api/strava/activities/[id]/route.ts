@@ -17,6 +17,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (!user) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
 
   const { id } = await params;
-  await fetchAndCacheActivityDetailAndStreams(user.id, id);
+  const activity = await fetchAndCacheActivityDetailAndStreams(user.id, id);
+  const accept = _request.headers.get("accept") ?? "";
+  if (accept.includes("application/json")) {
+    return NextResponse.json({ activity });
+  }
   redirect(`/activities/${id}`);
 }

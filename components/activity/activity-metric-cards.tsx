@@ -1,4 +1,4 @@
-import { StravaActivity } from "@prisma/client";
+import type { StravaActivity } from "@prisma/client";
 import { formatDistanceKm, formatDuration, formatSpeedKph } from "@/lib/format";
 
 export function ActivityMetricCards({ activity }: { activity: StravaActivity }) {

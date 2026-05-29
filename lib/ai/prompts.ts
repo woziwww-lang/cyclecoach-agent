@@ -16,36 +16,52 @@ export function buildActivityAnalysisPrompt(input: {
   computedMetrics: unknown;
   streamAvailability: string[];
 }) {
-  return `Analyze this Strava cycling activity in clear, practical language.
+  return `Rewrite this deterministic cycling analysis into concise coach language.
 
-Return a professional but easy-to-understand ride analysis with these sections:
-1. Activity Summary
-2. Effort Classification
-3. Key Metrics
-4. Intensity Analysis
-5. Climbing Analysis
-6. Pacing Analysis
-7. Fatigue/Risk Analysis
-8. What Went Well
-9. What To Improve
-10. Next Workout Recommendation
-11. Recovery Advice
-12. Nutrition/Hydration Advice
-13. Confidence Score
-14. Missing Data Warnings
+Return ONLY valid JSON with this shape:
+{
+  "overallVerdict": "string",
+  "effortType": "recovery|endurance|tempo|threshold|vo2max|climbing|mixed|unknown",
+  "keyMetrics": [{"label":"string","value":"string","note":"optional string"}],
+  "trainingMeaning": "string",
+  "wentWell": ["string"],
+  "toImprove": ["string"],
+  "nextRide": {"title":"string","details":"string","duration":"optional string","intensity":"optional string"},
+  "recovery": ["string"],
+  "confidence": {"level":"high|medium|low","reason":"string"},
+  "missingData": ["string"],
+  "disclaimer": "This is training guidance, not medical advice."
+}
 
 Activity:
-${JSON.stringify(input.activity, null, 2)}
+${JSON.stringify(input.activity)}
 
-Computed metrics:
-${JSON.stringify(input.computedMetrics, null, 2)}
+Deterministic analysis:
+${JSON.stringify(input.computedMetrics)}
 
 Available stream keys:
 ${JSON.stringify(input.streamAvailability)}
 
 Important:
+- Do not add facts not present in the data.
 - Do not claim power analysis if power is missing.
 - Do not claim heart-rate analysis if heart-rate is missing.
-- If only summary data exists, keep the conclusion conservative.
-- Mention that this is not medical advice.`;
+- Do not invent FTP, zones, max HR, diagnosis, weather, or nutrition amounts.
+- Keep bullets short and practical.`;
+}
+
+export function buildGeneralCoachPrompt(input: { message: string; activityContext?: unknown }) {
+  return `Answer as Coach Agent in concise, practical language.
+
+User question:
+${input.message}
+
+Optional activity context:
+${input.activityContext ? JSON.stringify(input.activityContext) : "none"}
+
+Rules:
+- Do not provide medical diagnosis.
+- Do not invent user data.
+- If data is missing, say what is missing.
+- Keep the answer actionable, friendly, and brief.`;
 }

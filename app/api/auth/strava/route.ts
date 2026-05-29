@@ -1,7 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/session";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.redirect(new URL("/login?next=strava", request.url));
+  }
+
   const clientId = process.env.STRAVA_CLIENT_ID;
   const redirectUri = process.env.STRAVA_REDIRECT_URI;
 
@@ -15,7 +21,7 @@ export async function GET() {
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("approval_prompt", "auto");
-  url.searchParams.set("scope", "read,activity:read");
+  url.searchParams.set("scope", "read,activity:read_all");
   url.searchParams.set("state", state);
 
   const response = NextResponse.redirect(url);

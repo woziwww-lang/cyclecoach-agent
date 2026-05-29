@@ -1,47 +1,52 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo } from "react";
-import { decodePolyline } from "@/lib/map/polyline";
+import type { StravaActivityStream } from "@prisma/client";
+import { getRouteData } from "@/lib/map/route-points";
+import { EmptyState } from "@/components/ui/empty-state";
+import { MapSkeleton } from "@/components/map/map-skeleton";
 
-export function ActivityMap({ polyline }: { polyline?: string | null }) {
-  const points = useMemo(() => (polyline ? decodePolyline(polyline) : []), [polyline]);
+const LeafletMap = dynamic(() => import("@/components/map/leaflet-activity-map").then((mod) => mod.LeafletActivityMap), {
+  ssr: false,
+  loading: () => <MapSkeleton />
+});
 
-  if (!polyline || points.length === 0) {
+export function ActivityMap({
+  polyline,
+  stream,
+  title
+}: {
+  polyline?: string | null;
+  stream?: Pick<StravaActivityStream, "streamsJson"> | null;
+  title?: string;
+}) {
+  const routeData = useMemo(() => getRouteData({ summaryPolyline: polyline, stream }), [polyline, stream]);
+
+  if (routeData.points.length < 2) {
     return (
-      <section className="flex h-72 items-center justify-center rounded-lg border bg-white text-muted shadow-soft">
-        No route polyline available for this activity.
-      </section>
+      <div className="rounded-3xl border bg-white p-5 shadow-soft">
+        <EmptyState
+          title="No route data"
+          description="This activity does not have usable route points yet. Try refreshing detail and streams, reconnect Strava with activity:read_all, or choose an outdoor ride."
+        />
+        <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+          <Diagnostic label="summary polyline" value={routeData.hasSummaryPolyline ? "present" : "missing"} />
+          <Diagnostic label="decoded polyline points" value={String(routeData.summaryPolylinePoints)} />
+          <Diagnostic label="lat/lng stream points" value={String(routeData.streamLatLngPoints)} />
+        </div>
+      </div>
     );
   }
 
-  const path = points.map(([lat, lng]) => `${lng},${lat}`).join(" ");
-
-  return (
-    <section className="rounded-lg border bg-white p-4 shadow-soft">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-semibold">Route preview</h2>
-        <p className="text-sm text-muted">{points.length} points</p>
-      </div>
-      <div className="overflow-hidden rounded-md border bg-slate-100">
-        <svg viewBox={buildViewBox(points)} className="h-72 w-full">
-          <polyline points={path} fill="none" stroke="#FC4C02" strokeWidth="0.0025" vectorEffect="non-scaling-stroke" />
-        </svg>
-      </div>
-      <p className="mt-2 text-xs text-muted">
-        Minimal SVG route preview for the first slice. Leaflet can replace this without changing data flow.
-      </p>
-    </section>
-  );
+  return <LeafletMap points={routeData.points} title={title} source={routeData.source} />;
 }
 
-function buildViewBox(points: [number, number][]) {
-  const lats = points.map((p) => p[0]);
-  const lngs = points.map((p) => p[1]);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs);
-  const maxLng = Math.max(...lngs);
-  const padLat = Math.max((maxLat - minLat) * 0.1, 0.001);
-  const padLng = Math.max((maxLng - minLng) * 0.1, 0.001);
-  return `${minLng - padLng} ${minLat - padLat} ${maxLng - minLng + padLng * 2} ${maxLat - minLat + padLat * 2}`;
+function Diagnostic({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-3">
+      <p className="text-xs font-medium text-muted">{label}</p>
+      <p className="mt-1 font-semibold">{value}</p>
+    </div>
+  );
 }

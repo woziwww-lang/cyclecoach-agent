@@ -1,4 +1,4 @@
-import { StravaActivity } from "@prisma/client";
+import type { StravaActivity } from "@prisma/client";
 import { formatDistanceKm, formatDuration, formatSpeedKph } from "@/lib/format";
 
 export function ActivityCard({ activity }: { activity: StravaActivity }) {
@@ -7,7 +7,7 @@ export function ActivityCard({ activity }: { activity: StravaActivity }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-semibold">{activity.name}</h2>
-          <p className="text-sm text-muted">{activity.startDate.toLocaleString()}</p>
+          <p className="text-sm text-muted">{new Date(activity.startDate).toLocaleString()}</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             {activity.averageHeartrate ? <Badge>HR</Badge> : null}
             {activity.averageWatts ? <Badge>Power</Badge> : null}

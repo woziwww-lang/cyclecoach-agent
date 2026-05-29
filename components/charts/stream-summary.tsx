@@ -1,4 +1,4 @@
-import { StravaActivityStream } from "@prisma/client";
+import type { StravaActivityStream } from "@prisma/client";
 
 export function StreamSummary({ stream }: { stream: StravaActivityStream | null }) {
   const keys = parseKeys(stream?.availableKeys);

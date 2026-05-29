@@ -10,6 +10,7 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String?  @unique
+  passwordHash String?
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -17,6 +18,7 @@ model User {
   accounts   ConnectedAccount[]
   activities StravaActivity[]
   analyses   ActivityAnalysis[]
+  settings   UserSettings?
 }
 
 model ConnectedAccount {
@@ -93,6 +95,7 @@ model StravaActivityStream {
   activityId    String   @unique
   streamsJson   String
   availableKeys String?
+  latlngCount   Int?
   createdAt     DateTime @default(now())
 
   activity StravaActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
@@ -107,7 +110,10 @@ model ActivityAnalysis {
   inputSummary String
   analysisJson String
   analysisText String?
+  deterministicResult String?
+  aiResult     String?
   confidence   Float?
+  fallbackUsed Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -115,4 +121,42 @@ model ActivityAnalysis {
 
   @@index([activityId, createdAt])
   @@index([userId, createdAt])
+}
+
+model UserSettings {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  language       String   @default("en")
+  llmProvider    String   @default("ollama")
+  ollamaBaseUrl  String   @default("http://localhost:11434")
+  ollamaModel    String   @default("qwen2.5:7b")
+  preferredUnits String   @default("metric")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CoachConversation {
+  id        String   @id @default(cuid())
+  userId    String?
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages CoachMessage[]
+
+  @@index([userId, createdAt])
+}
+
+model CoachMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  createdAt      DateTime @default(now())
+
+  conversation CoachConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }

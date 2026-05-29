@@ -1,8 +1,10 @@
 import { OllamaProvider } from "@/lib/ai/ollama";
 import { buildActivityAnalysisPrompt, buildCoachSystemPrompt } from "@/lib/ai/prompts";
+import { parseAnalysisResponse } from "@/lib/ai/parse-analysis";
+import { analyzeActivityDeterministic } from "@/lib/analysis/deterministic";
 import { prisma } from "@/lib/db/prisma";
-import { calculateRideMetrics } from "@/lib/fitness/metrics";
 import { fetchAndCacheActivityDetailAndStreams } from "@/lib/strava/sync";
+import { getEffectiveOllamaConfig } from "@/lib/settings/user-settings";
 
 export async function analyzeActivity(userId: string, activityId: string) {
   await fetchAndCacheActivityDetailAndStreams(userId, activityId);
@@ -14,15 +16,7 @@ export async function analyzeActivity(userId: string, activityId: string) {
 
   if (!activity) throw new Error("ACTIVITY_NOT_FOUND");
 
-  const computedMetrics = calculateRideMetrics({
-    distanceMeters: activity.distanceMeters,
-    movingTimeSec: activity.movingTimeSec,
-    elevationGainMeters: activity.totalElevationGain,
-    avgHr: activity.averageHeartrate,
-    maxHr: activity.maxHeartrate,
-    avgWatts: activity.averageWatts,
-    weightedWatts: activity.weightedAverageWatts
-  });
+  const deterministic = analyzeActivityDeterministic(activity, activity.stream);
 
   const summaryForPrompt = {
     name: activity.name,
@@ -40,25 +34,36 @@ export async function analyzeActivity(userId: string, activityId: string) {
     weightedAverageWatts: activity.weightedAverageWatts,
     averageCadence: activity.averageCadence,
     calories: activity.calories,
-    hasRoute: Boolean(activity.summaryPolyline)
+    hasRoute: Boolean(activity.summaryPolyline || activity.stream?.latlngCount)
   };
 
   const streamAvailability = parseJsonString<string[]>(activity.stream?.availableKeys, []);
 
-  const provider = new OllamaProvider();
-  let analysisText: string;
+  const config = await getEffectiveOllamaConfig(userId);
+  const provider = new OllamaProvider(config.baseUrl, config.model);
+  let analysisResult = deterministic;
+  let analysisText = JSON.stringify(deterministic, null, 2);
+  let fallbackUsed = true;
 
   try {
-    analysisText = await provider.generateText({
+    const rawText = await provider.generateText({
       system: buildCoachSystemPrompt(),
       prompt: buildActivityAnalysisPrompt({
         activity: summaryForPrompt,
-        computedMetrics,
+        computedMetrics: deterministic,
         streamAvailability
       })
     });
+    analysisResult = parseAnalysisResponse(rawText, deterministic);
+    fallbackUsed = Boolean(analysisResult.fallbackUsed);
+    analysisText = formatAnalysisText(analysisResult);
   } catch (error) {
-    analysisText = buildRuleBasedFallback(summaryForPrompt, computedMetrics, String(error));
+    analysisResult = {
+      ...deterministic,
+      fallbackUsed: true,
+      missingData: [...deterministic.missingData, `LLM unavailable or failed: ${String(error)}`]
+    };
+    analysisText = formatAnalysisText(analysisResult);
   }
 
   return prisma.activityAnalysis.create({
@@ -66,19 +71,18 @@ export async function analyzeActivity(userId: string, activityId: string) {
       userId,
       activityId,
       provider: "ollama",
-      model: process.env.OLLAMA_MODEL ?? "qwen2.5:7b",
+      model: config.model,
       inputSummary: JSON.stringify({
         activity: summaryForPrompt,
-        computedMetrics,
+        deterministic,
         streamAvailability
       }),
-      analysisJson: JSON.stringify({
-        text: analysisText,
-        computedMetrics,
-        generatedAt: new Date().toISOString()
-      }),
+      deterministicResult: JSON.stringify(deterministic),
+      aiResult: JSON.stringify(analysisResult),
+      analysisJson: JSON.stringify(analysisResult),
       analysisText,
-      confidence: computedMetrics.confidence
+      confidence: confidenceToNumber(analysisResult.confidence.level),
+      fallbackUsed
     }
   });
 }
@@ -92,24 +96,30 @@ function parseJsonString<T>(value: string | null | undefined, fallback: T): T {
   }
 }
 
-function buildRuleBasedFallback(activity: Record<string, unknown>, metrics: ReturnType<typeof calculateRideMetrics>, reason: string) {
-  return `Activity Summary
-${String(activity.name)} was classified as ${metrics.classification} based on the available summary data.
+function confidenceToNumber(level: string) {
+  if (level === "high") return 0.85;
+  if (level === "medium") return 0.6;
+  return 0.35;
+}
 
-Intensity Analysis
-The analysis confidence is ${Math.round(metrics.confidence * 100)}%. The intensity source is ${metrics.intensitySource}. Missing data limits precision.
+function formatAnalysisText(result: { overallVerdict: string; effortType: string; trainingMeaning: string; nextRide: { title: string; details: string }; confidence: { level: string; reason: string }; missingData: string[] }) {
+  return `Overall Verdict
+${result.overallVerdict}
 
-Climbing Analysis
-Elevation gain was ${Math.round(metrics.elevationGainMeters)} m, with about ${metrics.climbingRatio?.toFixed(1) ?? "unknown"} m/km.
+Effort Type
+${result.effortType}
 
-Next Workout Recommendation
-If you feel recovered, do an easy endurance ride next. If your legs feel heavy, choose rest or a short recovery spin.
+Training Meaning
+${result.trainingMeaning}
 
-Missing Data Warnings
-${metrics.missingDataWarnings.join("\n")}
+Next Ride
+${result.nextRide.title}: ${result.nextRide.details}
 
-LLM fallback note
-Ollama was unavailable or failed: ${reason}
+Confidence
+${result.confidence.level}: ${result.confidence.reason}
 
-This is not medical advice.`;
+Missing Data
+${result.missingData.length ? result.missingData.join("\n") : "None flagged."}
+
+This is training guidance, not medical advice.`;
 }

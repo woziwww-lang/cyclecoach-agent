@@ -3,18 +3,11 @@ import { refreshStravaToken, StravaTokenResponse } from "@/lib/strava/oauth";
 import { StravaActivityDetail, StravaActivitySummary, StravaClient } from "@/lib/strava/client";
 import { calculateRideMetrics } from "@/lib/fitness/metrics";
 
-export async function upsertStravaConnection(token: StravaTokenResponse) {
+export async function upsertStravaConnection(token: StravaTokenResponse, userId: string) {
   const athleteName = [token.athlete.firstname, token.athlete.lastname].filter(Boolean).join(" ").trim();
   const providerUserId = String(token.athlete.id);
 
-  const user = await prisma.user.upsert({
-    where: { id: `strava-${providerUserId}` },
-    update: { name: athleteName || token.athlete.username || "Strava Rider" },
-    create: {
-      id: `strava-${providerUserId}`,
-      name: athleteName || token.athlete.username || "Strava Rider"
-    }
-  });
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
   const account = await prisma.connectedAccount.upsert({
     where: { provider_providerUserId: { provider: "strava", providerUserId } },
@@ -118,7 +111,7 @@ export async function fetchAndCacheActivityDetailAndStreams(userId: string, acti
     console.warn("Strava streams unavailable", error);
   }
 
-  const updated = await prisma.stravaActivity.update({
+  await prisma.stravaActivity.update({
     where: { id: activity.id },
     data: {
       ...mapStravaActivity(detail),
@@ -137,21 +130,27 @@ export async function fetchAndCacheActivityDetailAndStreams(userId: string, acti
   });
 
   if (Object.keys(streams).length > 0) {
+    const latlngCount = getLatLngCount(streams);
     await prisma.stravaActivityStream.upsert({
       where: { activityId: activity.id },
       update: {
         streamsJson: JSON.stringify(streams),
-        availableKeys: JSON.stringify(Object.keys(streams))
+        availableKeys: JSON.stringify(Object.keys(streams)),
+        latlngCount
       },
       create: {
         activityId: activity.id,
         streamsJson: JSON.stringify(streams),
-        availableKeys: JSON.stringify(Object.keys(streams))
+        availableKeys: JSON.stringify(Object.keys(streams)),
+        latlngCount
       }
     });
   }
 
-  return updated;
+  return prisma.stravaActivity.findUniqueOrThrow({
+    where: { id: activity.id },
+    include: { stream: true, analyses: { orderBy: { createdAt: "desc" }, take: 1 } }
+  });
 }
 
 function isCyclingActivity(activity: StravaActivitySummary) {
@@ -181,4 +180,9 @@ function mapStravaActivity(activity: StravaActivitySummary | StravaActivityDetai
     summaryPolyline: activity.map?.summary_polyline,
     rawSummaryJson: JSON.stringify(activity)
   };
+}
+
+function getLatLngCount(streams: Record<string, unknown>) {
+  const latlng = streams.latlng as { data?: unknown[] } | undefined;
+  return Array.isArray(latlng?.data) ? latlng.data.length : null;
 }

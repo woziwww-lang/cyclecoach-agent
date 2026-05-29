@@ -22,22 +22,22 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
   if (!activity) notFound();
 
   return (
-    <main className="mx-auto max-w-6xl space-y-5 px-4 py-8">
+    <main className="mx-auto max-w-7xl space-y-5 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <a className="text-sm text-brand" href="/activities">Back to activities</a>
+          <a className="text-sm font-semibold text-brand" href={`/dashboard?activityId=${activity.id}`}>Back to dashboard</a>
           <h1 className="mt-1 text-3xl font-semibold">{activity.name}</h1>
           <p className="text-muted">{activity.startDate.toLocaleString()}</p>
         </div>
         <form action={`/api/strava/activities/${activity.id}`} method="post">
-          <button className="rounded-md border bg-white px-4 py-2 font-medium">Refresh detail & streams</button>
+          <button className="rounded-2xl border bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-slate-50">Refresh detail & streams</button>
         </form>
       </div>
 
       <ActivityMetricCards activity={activity} />
       <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
         <section className="space-y-5">
-          <ActivityMap polyline={activity.summaryPolyline} />
+          <ActivityMap polyline={activity.summaryPolyline} stream={activity.stream} title="Ride route" />
           <StreamSummary stream={activity.stream} />
         </section>
         <AnalysisPanel activityId={activity.id} latestAnalysis={activity.analyses[0] ?? null} />

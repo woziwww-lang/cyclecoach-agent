@@ -21,3 +21,7 @@ export function setUserCookie(response: NextResponse, userId: string) {
     maxAge: 60 * 60 * 24 * 30
   });
 }
+
+export function clearUserCookie(response: NextResponse) {
+  response.cookies.delete(cookieName);
+}
