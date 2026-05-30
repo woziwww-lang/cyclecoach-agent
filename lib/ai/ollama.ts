@@ -1,4 +1,4 @@
-import { AiProvider } from "@/lib/ai/provider";
+import type { AiProvider } from "@/lib/ai/provider";
 
 export class OllamaProvider implements AiProvider {
   constructor(

@@ -5,8 +5,11 @@ import { RidePlanForm } from "@/features/planner/components/ride-plan-form";
 import { RidePlanResult } from "@/features/planner/components/ride-plan-result";
 import { RidePlanSkeleton } from "@/features/planner/components/ride-plan-skeleton";
 import { useGenerateRidePlanMutation } from "@/features/planner/api/planner";
-import { generateRidePlan } from "@/features/planner/services/ride-plan-generator";
-import type { RecentTrainingSummary, RidePlanInput } from "@/features/planner/schemas/ride-plan.schema";
+import { emptyTrainingMemory } from "@/features/agent/memory/build-training-memory";
+import { generateDeterministicRidePlan } from "@/features/agent/tools/generate-deterministic-ride-plan";
+import { matchRouteCandidates } from "@/features/agent/tools/match-route-candidates";
+import { getRouteCatalog } from "@/features/agent/data/route-catalog";
+import type { RidePlanInput, RouteCandidate, TrainingMemory } from "@/features/planner/schemas/ride-plan.schema";
 import { useStravaStatusQuery } from "@/lib/api/strava";
 import { ErrorState } from "@/components/ui/error-state";
 import { PlannerIcon } from "@/components/ui/icons";
@@ -15,39 +18,36 @@ const initialInput: RidePlanInput = {
   durationMinutes: 90,
   goal: "endurance",
   readiness: "normal",
+  routePreference: "not_sure",
   useLatestRideContext: true
 };
 
-const noRecentTraining: RecentTrainingSummary = {
-  hasData: false,
-  latestRideName: null,
-  latestRideDate: null,
-  sevenDayDistanceKm: 0,
-  sevenDayElevationM: 0,
-  sevenDayMovingHours: 0,
-  possibleHighIntensity: false
-};
+const noTrainingMemory = emptyTrainingMemory();
 
 export function PlanNextRidePage() {
   const [input, setInput] = useState<RidePlanInput>(initialInput);
   const [generated, setGenerated] = useState<{
-    plan: ReturnType<typeof generateRidePlan>;
-    recentTraining: RecentTrainingSummary;
+    plan: ReturnType<typeof generateDeterministicRidePlan>;
+    trainingMemory: TrainingMemory;
+    routeCandidates: RouteCandidate[];
     fallbackUsed: boolean;
   } | null>(null);
   const statusQuery = useStravaStatusQuery();
   const mutation = useGenerateRidePlanMutation();
 
-  const preview = useMemo(() => generateRidePlan(input, noRecentTraining), [input]);
+  const previewCandidates = useMemo(() => matchRouteCandidates(input, noTrainingMemory, [], getRouteCatalog()), [input]);
+  const preview = useMemo(() => generateDeterministicRidePlan(input, noTrainingMemory, previewCandidates), [input, previewCandidates]);
   const currentPlan = generated?.plan ?? preview;
-  const currentRecent = generated?.recentTraining ?? noRecentTraining;
+  const currentMemory = generated?.trainingMemory ?? noTrainingMemory;
+  const currentCandidates = generated?.routeCandidates ?? previewCandidates;
   const stravaConnected = Boolean(statusQuery.data?.connected);
 
   async function generate() {
     const response = await mutation.mutateAsync(input);
     setGenerated({
       plan: response.plan,
-      recentTraining: response.recentTraining,
+      trainingMemory: response.trainingMemory,
+      routeCandidates: response.routeCandidates,
       fallbackUsed: response.fallbackUsed
     });
   }
@@ -113,7 +113,7 @@ export function PlanNextRidePage() {
           {mutation.isPending ? (
             <RidePlanSkeleton />
           ) : (
-            <RidePlanResult plan={currentPlan} recentTraining={currentRecent} fallbackUsed={generated?.fallbackUsed} />
+            <RidePlanResult plan={currentPlan} trainingMemory={currentMemory} routeCandidates={currentCandidates} fallbackUsed={generated?.fallbackUsed} />
           )}
         </div>
       </div>

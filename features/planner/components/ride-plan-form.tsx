@@ -27,6 +27,15 @@ const readinessOptions: Array<{ value: RidePlanInput["readiness"]; label: string
   { value: "not_sure", label: "Not sure" }
 ];
 
+const routePreferences: Array<{ value: RidePlanInput["routePreference"]; title: string; description: string }> = [
+  { value: "previous_route", title: "Previous route", description: "Prefer a familiar Strava route." },
+  { value: "known_route", title: "Known route", description: "Use the Tokyo/Kanto catalog." },
+  { value: "flat", title: "Flat", description: "Keep terrain simple and steady." },
+  { value: "climbing", title: "Climbing", description: "Look for elevation when suitable." },
+  { value: "recovery", title: "Recovery", description: "Low-risk, easy terrain." },
+  { value: "not_sure", title: "Not sure", description: "Let CycleCoach decide." }
+];
+
 export function RidePlanForm({
   value,
   onChange,
@@ -104,6 +113,26 @@ export function RidePlanForm({
             {readinessOptions.map((option) => (
               <button type="button" key={option.value} onClick={() => update({ readiness: option.value })} className={pillClass(value.readiness === option.value)}>
                 {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold">Route preference</h2>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            {routePreferences.map((preference) => (
+              <button
+                type="button"
+                key={preference.value}
+                onClick={() => update({ routePreference: preference.value })}
+                className={clsx(
+                  "rounded-2xl border p-3 text-left transition duration-200 ease-out hover:border-brand/35 active:scale-[0.99]",
+                  value.routePreference === preference.value ? "border-brand/30 bg-orange-50" : "border-slate-200 bg-white"
+                )}
+              >
+                <p className="font-semibold">{preference.title}</p>
+                <p className="mt-1 text-xs leading-5 text-muted">{preference.description}</p>
               </button>
             ))}
           </div>

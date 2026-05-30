@@ -1,5 +1,5 @@
 import type { StravaActivity, StravaActivityStream } from "@prisma/client";
-import { AnalysisResult } from "@/lib/analysis/analysis-schema";
+import type { AnalysisResult } from "@/lib/analysis/analysis-schema";
 import { calculateRideMetrics } from "@/lib/fitness/metrics";
 import { formatDistanceKm, formatDuration, formatSpeedKph } from "@/lib/format";
 

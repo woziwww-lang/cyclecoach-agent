@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { exchangeStravaCode } from "@/lib/strava/oauth";
 import { upsertStravaConnection } from "@/lib/strava/sync";
 import { getCurrentUser, setUserCookie } from "@/lib/auth/session";

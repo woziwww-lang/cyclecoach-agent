@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
-import { refreshStravaToken, StravaTokenResponse } from "@/lib/strava/oauth";
-import { StravaActivityDetail, StravaActivitySummary, StravaClient } from "@/lib/strava/client";
+import { refreshStravaToken, type StravaTokenResponse } from "@/lib/strava/oauth";
+import { type StravaActivityDetail, type StravaActivitySummary, StravaClient } from "@/lib/strava/client";
 import { calculateRideMetrics } from "@/lib/fitness/metrics";
 
 export async function upsertStravaConnection(token: StravaTokenResponse, userId: string) {

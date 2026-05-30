@@ -1,4 +1,4 @@
-import { AnalysisResult, AnalysisResultSchema } from "@/lib/analysis/analysis-schema";
+import { type AnalysisResult, AnalysisResultSchema } from "@/lib/analysis/analysis-schema";
 
 export function parseAnalysisResponse(text: string, fallback: AnalysisResult): AnalysisResult {
   const jsonText = extractJson(text);

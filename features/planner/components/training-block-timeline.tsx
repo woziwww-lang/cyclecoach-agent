@@ -2,9 +2,19 @@ import type { RidePlan } from "@/features/planner/schemas/ride-plan.schema";
 
 export function TrainingBlockTimeline({ plan }: { plan: RidePlan }) {
   const blocks = [
-    { title: "Warmup", durationMinutes: plan.warmup.durationMinutes, intensity: "Easy", description: plan.warmup.description },
-    ...plan.mainSet,
-    { title: "Cooldown", durationMinutes: plan.cooldown.durationMinutes, intensity: "Easy", description: plan.cooldown.description }
+    {
+      title: "Warmup",
+      durationMinutes: plan.workoutStructure.warmup.durationMinutes,
+      intensity: "Easy",
+      description: plan.workoutStructure.warmup.description
+    },
+    ...plan.workoutStructure.mainSet,
+    {
+      title: "Cooldown",
+      durationMinutes: plan.workoutStructure.cooldown.durationMinutes,
+      intensity: "Easy",
+      description: plan.workoutStructure.cooldown.description
+    }
   ];
 
   return (

@@ -1,14 +1,16 @@
-import type { RecentTrainingSummary, RidePlan } from "@/features/planner/schemas/ride-plan.schema";
+import type { RouteCandidate, RidePlan, TrainingMemory } from "@/features/planner/schemas/ride-plan.schema";
 import { TrainingBlockTimeline } from "@/features/planner/components/training-block-timeline";
 import { StatusPill } from "@/components/ui/status-pill";
 
 export function RidePlanResult({
   plan,
-  recentTraining,
+  trainingMemory,
+  routeCandidates,
   fallbackUsed
 }: {
   plan: RidePlan;
-  recentTraining: RecentTrainingSummary;
+  trainingMemory: TrainingMemory;
+  routeCandidates: RouteCandidate[];
   fallbackUsed?: boolean;
 }) {
   return (
@@ -16,20 +18,44 @@ export function RidePlanResult({
       <article className="cc-card overflow-hidden">
         <div className="border-b border-slate-100 bg-orange-50/55 p-5">
           <div className="flex flex-wrap gap-2">
-            <StatusPill tone="orange">{plan.rideType.replace("_", " ")}</StatusPill>
+            <StatusPill tone="orange">{plan.trainingPurpose.replace("_", " ")}</StatusPill>
             <StatusPill>{plan.intensity}</StatusPill>
+            <StatusPill>{plan.recommendedRoute.source.replace("_", " ")}</StatusPill>
             <StatusPill tone={plan.confidence.level === "high" ? "green" : plan.confidence.level === "medium" ? "orange" : "slate"}>{plan.confidence.level} confidence</StatusPill>
             {fallbackUsed || plan.fallbackUsed ? <StatusPill>rule fallback</StatusPill> : null}
           </div>
           <h2 className="mt-4 text-2xl font-semibold tracking-tight">{plan.title}</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{plan.coachSummary}</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">{plan.summary}</p>
         </div>
 
-        <div className="grid gap-3 p-5 sm:grid-cols-3">
-          <Metric label="Duration" value={`${plan.durationMinutes} min`} />
-          <Metric label="Route type" value={plan.routeType} />
-          <Metric label="Intensity" value={plan.intensity} />
+        <div className="grid gap-3 p-5 sm:grid-cols-4">
+          <Metric label="Route" value={plan.recommendedRoute.name} />
+          <Metric label="Distance" value={plan.recommendedRoute.estimatedDistanceKm ? `${plan.recommendedRoute.estimatedDistanceKm.toFixed(1)} km` : "flexible"} />
+          <Metric label="Elevation" value={plan.recommendedRoute.estimatedElevationM ? `${Math.round(plan.recommendedRoute.estimatedElevationM)} m` : "unknown"} />
+          <Metric label="Duration" value={`${plan.recommendedRoute.estimatedDurationMinutes} min`} />
         </div>
+      </article>
+
+      <article className="cc-card p-5">
+        <p className="cc-section-label">Recent context</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <Metric label="Latest ride" value={trainingMemory.latestRide?.name ?? "none"} />
+          <Metric label="7d load" value={`${trainingMemory.last7Days.distanceKm.toFixed(1)} km · ${Math.round(trainingMemory.last7Days.elevationM)} m`} />
+          <Metric label="Route memory" value={`${trainingMemory.routeMemory.length} mapped routes`} />
+        </div>
+        <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm leading-6 text-muted">{trainingMemory.last30Days.trendSummary}</p>
+        {trainingMemory.fatigueSignals.length ? <BulletList title="Fatigue signals" items={trainingMemory.fatigueSignals} tone="amber" /> : null}
+      </article>
+
+      <article className="cc-card p-5">
+        <p className="cc-section-label">Recommended route</p>
+        <h2 className="mt-1 text-xl font-semibold">{plan.recommendedRoute.name}</h2>
+        <p className="mt-2 text-sm leading-6 text-muted">{plan.recommendedRoute.reason}</p>
+        {plan.recommendedRoute.basedOnActivityId ? (
+          <p className="mt-3 rounded-2xl bg-green-50 p-3 text-sm text-green-800">
+            Based on one of your previous Strava routes. Open Dashboard to inspect the original mapped ride.
+          </p>
+        ) : null}
       </article>
 
       <article className="cc-card p-5">
@@ -41,24 +67,31 @@ export function RidePlanResult({
       </article>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <AdviceCard title="Fuel & Hydration" items={plan.nutrition} />
-        <AdviceCard title="Recovery" items={plan.recovery} />
+        <BulletList title="Why this fits today" items={plan.whyThisFitsToday} />
+        <BulletList title="Avoid today" items={plan.avoidToday} tone="amber" />
+        <BulletList title="Fuel & Hydration" items={plan.nutrition} />
+        <BulletList title="Recovery" items={plan.recovery} />
       </div>
 
-      <article className="cc-card p-5">
-        <p className="cc-section-label">Personalization</p>
-        {recentTraining.hasData ? (
-          <p className="mt-2 text-sm leading-6 text-muted">
-            Using recent Strava context: latest ride {recentTraining.latestRideName ?? "unknown"}, 7d {recentTraining.sevenDayDistanceKm.toFixed(1)} km,
-            {" "}{Math.round(recentTraining.sevenDayElevationM)} m elevation, {recentTraining.sevenDayMovingHours.toFixed(1)} moving hours.
-          </p>
-        ) : (
-          <p className="mt-2 text-sm leading-6 text-muted">No recent Strava context was used. Connect Strava in My Page for more personalized plans.</p>
-        )}
-        <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm leading-6 text-muted">{plan.confidence.reason}</p>
-      </article>
+      <BulletList title="Safety notes" items={plan.safetyNotes} tone="amber" />
+      {plan.missingData.length ? <BulletList title="Missing data" items={plan.missingData} tone="slate" /> : null}
 
-      <AdviceCard title="Safety notes" items={plan.safetyNotes} tone="amber" />
+      {routeCandidates.length > 1 ? (
+        <article className="cc-card p-5">
+          <p className="cc-section-label">Other candidates considered</p>
+          <div className="mt-3 grid gap-2">
+            {routeCandidates.slice(1, 4).map((candidate) => (
+              <div key={candidate.id} className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-semibold">{candidate.name}</p>
+                  <StatusPill>{candidate.source.replace("_", " ")}</StatusPill>
+                </div>
+                <p className="mt-1 text-sm text-muted">{candidate.scoreReasons[0] ?? candidate.notes}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      ) : null}
     </section>
   );
 }
@@ -67,12 +100,12 @@ function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
       <p className="text-xs font-medium text-muted">{label}</p>
-      <p className="mt-1 font-semibold">{value}</p>
+      <p className="mt-1 line-clamp-2 font-semibold">{value}</p>
     </div>
   );
 }
 
-function AdviceCard({ title, items, tone = "slate" }: { title: string; items: string[]; tone?: "slate" | "amber" }) {
+function BulletList({ title, items, tone = "slate" }: { title: string; items: string[]; tone?: "slate" | "amber" }) {
   return (
     <article className={tone === "amber" ? "cc-card border-amber-200 bg-amber-50/60 p-5" : "cc-card p-5"}>
       <h3 className="font-semibold">{title}</h3>

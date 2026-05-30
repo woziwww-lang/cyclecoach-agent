@@ -14,7 +14,7 @@ export function RidePlanSkeleton() {
           </div>
         ))}
       </div>
-      {["Building training blocks...", "Checking fatigue signal...", "Writing coach notes..."].map((step) => (
+      {["Reading recent rides...", "Checking training load...", "Matching route candidates...", "Building ride plan..."].map((step) => (
         <div key={step} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 text-sm font-medium text-muted">
           <span className="size-2 animate-pulse rounded-full bg-brand" />
           {step}

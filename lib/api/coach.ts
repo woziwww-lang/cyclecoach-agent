@@ -10,6 +10,7 @@ export type CoachChatResponse = {
   message: string;
   fallbackUsed: boolean;
   model: string;
+  memoryUsed: boolean;
 };
 
 export function useCoachChatMutation() {

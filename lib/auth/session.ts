@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import type { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 
 const cookieName = process.env.SESSION_COOKIE_NAME ?? "cc_user_id";

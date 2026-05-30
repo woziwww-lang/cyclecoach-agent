@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { ChatMessage } from "@/components/coach/chat-message";
 import { ChatSkeleton } from "@/components/coach/chat-skeleton";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { useActivitiesQuery } from "@/lib/api/activities";
+import { useTrainingMemoryQuery } from "@/lib/api/agent";
 import { useCoachChatMutation } from "@/lib/api/coach";
 import { useLlmHealthQuery } from "@/lib/api/settings";
 import { useChatStore } from "@/lib/stores/use-chat-store";
@@ -25,8 +26,10 @@ export function CoachChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const chatMutation = useCoachChatMutation();
   const activitiesQuery = useActivitiesQuery();
+  const memoryQuery = useTrainingMemoryQuery();
   const healthQuery = useLlmHealthQuery();
   const activities = activitiesQuery.data?.activities ?? [];
+  const memory = memoryQuery.data?.trainingMemory;
 
   async function submit(event?: FormEvent) {
     event?.preventDefault();
@@ -58,7 +61,15 @@ export function CoachChat() {
           <div className="mt-3 flex flex-wrap gap-2">
             <StatusPill tone={healthQuery.data?.ollama.ok ? "green" : "red"}>{healthQuery.data?.ollama.ok ? "model ready" : "model offline"}</StatusPill>
             <StatusPill>{healthQuery.data?.ollama.model ?? "qwen2.5:7b"}</StatusPill>
+            <StatusPill tone={memory?.latestRide ? "green" : "slate"}>{memory?.latestRide ? "recent memory on" : "no ride memory"}</StatusPill>
           </div>
+          {memory?.latestRide ? (
+            <div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm leading-6 text-muted">
+              Latest: <span className="font-semibold text-ink">{memory.latestRide.name}</span>
+              <br />
+              7d: {memory.last7Days.distanceKm.toFixed(1)} km · {Math.round(memory.last7Days.elevationM)} m · {memory.routeMemory.length} mapped routes
+            </div>
+          ) : null}
           <label htmlFor="coach-activity-context" className="mt-4 block text-sm font-medium">Attach ride</label>
           <select
             id="coach-activity-context"
