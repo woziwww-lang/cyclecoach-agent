@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 export function ActionCard({
   href,
@@ -11,7 +12,7 @@ export function ActionCard({
   href: string;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   meta?: string;
   primary?: boolean;
 }) {
@@ -19,17 +20,26 @@ export function ActionCard({
     <a
       href={href}
       className={clsx(
-        "group block rounded-[1.25rem] border border-slate-200/80 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.045)] transition duration-200 hover:-translate-y-0.5 hover:border-brand/35 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)] active:translate-y-0",
+        "group block rounded-[1.25rem] border border-slate-200/80 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.045)] transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:border-brand/35 hover:bg-white hover:shadow-[0_18px_40px_rgba(15,23,42,0.09)] active:scale-[0.99]",
         primary && "border-brand/25 bg-orange-50/55"
       )}
     >
       <div className="flex items-start justify-between gap-4">
-        <span className="flex size-10 items-center justify-center rounded-2xl bg-slate-50 text-lg shadow-sm ring-1 ring-slate-200">{icon}</span>
-        {meta ? <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-muted">{meta}</span> : null}
+        <span className="cc-icon-tile text-brand transition duration-200 group-hover:bg-brand group-hover:text-white">
+          {icon}
+        </span>
+        {meta ? (
+          <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-muted transition group-hover:border-brand/25 group-hover:text-ink">
+            {meta}
+          </span>
+        ) : null}
       </div>
       <h3 className="mt-5 text-lg font-semibold">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
-      <span className="mt-4 inline-flex text-sm font-semibold text-brand transition group-hover:translate-x-0.5">Open</span>
+      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand transition group-hover:gap-2">
+        Open
+        <ArrowRightIcon className="size-4" />
+      </span>
     </a>
   );
 }

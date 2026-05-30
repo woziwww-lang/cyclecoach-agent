@@ -22,7 +22,7 @@ export function StravaSettingsCard() {
           <p><span className="text-muted">Athlete:</span> {statusQuery.data?.account?.displayName ?? "Strava rider"}</p>
           <p><span className="text-muted">Last sync:</span> {statusQuery.data?.account?.lastSyncedAt ? new Date(statusQuery.data.account.lastSyncedAt).toLocaleString() : "not synced yet"}</p>
           <form action="/api/auth/strava/disconnect" method="post">
-            <button className={buttonClassName("danger")}>Disconnect Strava</button>
+            <button type="submit" className={buttonClassName("danger")}>Disconnect Strava</button>
           </form>
         </div>
       ) : (

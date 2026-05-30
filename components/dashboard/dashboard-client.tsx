@@ -11,6 +11,7 @@ import { LoadingCard } from "@/components/ui/loading-card";
 import { useActivitiesQuery, useSyncStravaMutation } from "@/lib/api/activities";
 import { useStravaStatusQuery } from "@/lib/api/strava";
 import { useDashboardStore } from "@/lib/stores/use-dashboard-store";
+import { DashboardIcon } from "@/components/ui/icons";
 
 export function DashboardClient() {
   const { selectedActivityId, setSelectedActivityId } = useDashboardStore();
@@ -44,13 +45,12 @@ export function DashboardClient() {
   return (
     <DashboardFrame
       right={
-        <button
+        <Button
           onClick={() => syncMutation.mutate()}
           disabled={syncMutation.isPending}
-          className="inline-flex min-h-10 items-center justify-center rounded-2xl bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55"
         >
           {syncMutation.isPending ? "Syncing…" : "Sync latest 30"}
-        </button>
+        </Button>
       }
     >
       {syncMutation.isError ? (
@@ -91,14 +91,19 @@ export function DashboardClient() {
 function DashboardFrame({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <main className="cc-container space-y-5">
-      <div className="cc-card-muted px-5 py-5 md:px-6">
+      <div className="cc-kinetic-bg rounded-[1.5rem] border border-slate-200/80 bg-white/80 px-5 py-5 shadow-[0_14px_44px_rgba(15,23,42,0.06)] md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="cc-section-label">Training center</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">Ride Dashboard</h1>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-              Activities, route maps, ride metrics, and coach analysis in one place.
-            </p>
+          <div className="flex gap-4">
+            <span className="cc-icon-tile bg-white text-brand">
+              <DashboardIcon className="size-5" />
+            </span>
+            <div>
+              <p className="cc-section-label">Training center</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">Ride Dashboard</h1>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
+                Activities, route maps, ride metrics, and coach analysis in one place.
+              </p>
+            </div>
           </div>
           {right}
         </div>

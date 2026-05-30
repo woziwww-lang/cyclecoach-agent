@@ -31,7 +31,7 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
           <p className="text-muted">{activity.startDate.toLocaleString()}</p>
         </div>
         <form action={`/api/strava/activities/${activity.id}`} method="post">
-          <button className={buttonClassName("secondary")}>Refresh detail & streams</button>
+          <button type="submit" className={buttonClassName("secondary")}>Refresh detail & streams</button>
         </form>
       </div>
 

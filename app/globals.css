@@ -10,7 +10,9 @@ body {
 }
 
 body {
-  background: linear-gradient(180deg, #fbfcfd 0%, #f5f7fa 100%);
+  background:
+    linear-gradient(120deg, rgba(249, 115, 22, 0.07), transparent 32%),
+    linear-gradient(180deg, #fbfcfd 0%, #f5f7fa 100%);
   color: #111827;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -28,7 +30,7 @@ a {
 }
 
 ::selection {
-  background: rgba(252, 76, 2, 0.18);
+  background: rgba(249, 115, 22, 0.18);
 }
 
 .cc-scrollbar {
@@ -37,7 +39,7 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid rgba(252, 76, 2, 0.22);
+  outline: 3px solid rgba(249, 115, 22, 0.24);
   outline-offset: 3px;
 }
 
@@ -56,5 +58,34 @@ a {
 
   .cc-section-label {
     @apply text-xs font-semibold uppercase tracking-[0.18em] text-brand;
+  }
+
+  .cc-icon-tile {
+    @apply flex size-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 shadow-sm ring-1 ring-slate-200;
+  }
+
+  .cc-kinetic-bg {
+    background-image:
+      linear-gradient(135deg, rgba(249, 115, 22, 0.08), transparent 30%),
+      linear-gradient(315deg, rgba(34, 197, 94, 0.07), transparent 34%),
+      linear-gradient(rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+    background-position: center;
+  }
+
+  .cc-interactive {
+    @apply transition duration-200 ease-out active:scale-[0.99];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

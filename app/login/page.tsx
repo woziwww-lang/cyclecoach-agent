@@ -22,7 +22,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             Password
             <input required type="password" name="password" className="rounded-2xl border border-slate-200 px-3 py-2 font-normal outline-none transition focus:border-brand/60" />
           </label>
-          <button className={buttonClassName("primary", "w-full py-3")}>Log in</button>
+          <button type="submit" className={buttonClassName("primary", "w-full py-3")}>Log in</button>
         </form>
         <p className="mt-4 text-center text-sm text-muted">
           No account? <a href="/register" className="font-semibold text-brand">Create one</a>

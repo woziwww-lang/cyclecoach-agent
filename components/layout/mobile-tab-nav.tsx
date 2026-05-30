@@ -1,11 +1,12 @@
 import { MobileNavLinks } from "@/components/layout/nav-links";
+import { CoachIcon, DashboardIcon, HomeIcon, PlannerIcon, UserSettingsIcon } from "@/components/ui/icons";
 
 const navItems = [
-  { href: "/", label: "Home", icon: "⌂" },
-  { href: "/coach", label: "Coach", icon: "✦" },
-  { href: "/dashboard", label: "Rides", icon: "⌁" },
-  { href: "/planner", label: "Plan", icon: "◎" },
-  { href: "/me", label: "Me", icon: "◌" }
+  { href: "/", label: "Home", icon: <HomeIcon className="size-5" /> },
+  { href: "/coach", label: "Coach", icon: <CoachIcon className="size-5" /> },
+  { href: "/dashboard", label: "Rides", icon: <DashboardIcon className="size-5" /> },
+  { href: "/planner", label: "Plan", icon: <PlannerIcon className="size-5" /> },
+  { href: "/me", label: "Me", icon: <UserSettingsIcon className="size-5" /> }
 ];
 
 export function MobileTabNav() {

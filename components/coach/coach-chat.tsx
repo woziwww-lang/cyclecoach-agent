@@ -9,6 +9,7 @@ import { useActivitiesQuery } from "@/lib/api/activities";
 import { useCoachChatMutation } from "@/lib/api/coach";
 import { useLlmHealthQuery } from "@/lib/api/settings";
 import { useChatStore } from "@/lib/stores/use-chat-store";
+import { CoachIcon } from "@/components/ui/icons";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -48,13 +49,19 @@ export function CoachChat() {
     <main className="cc-container grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <section className="cc-card p-4">
-          <h2 className="font-semibold">Coach context</h2>
+          <div className="flex items-center gap-3">
+            <span className="cc-icon-tile size-9 rounded-xl bg-orange-50 text-brand">
+              <CoachIcon className="size-5" />
+            </span>
+            <h2 className="font-semibold">Coach context</h2>
+          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <StatusPill tone={healthQuery.data?.ollama.ok ? "green" : "red"}>{healthQuery.data?.ollama.ok ? "model ready" : "model offline"}</StatusPill>
             <StatusPill>{healthQuery.data?.ollama.model ?? "qwen2.5:7b"}</StatusPill>
           </div>
-          <label className="mt-4 block text-sm font-medium">Attach ride</label>
+          <label htmlFor="coach-activity-context" className="mt-4 block text-sm font-medium">Attach ride</label>
           <select
+            id="coach-activity-context"
             value={activityId ?? ""}
             onChange={(event) => setActivityId(event.target.value || null)}
             className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand/60"
@@ -68,7 +75,7 @@ export function CoachChat() {
       </aside>
 
       <section className="cc-card flex min-h-[72vh] flex-col overflow-hidden">
-        <div className="border-b border-slate-100 px-5 py-4">
+        <div className="cc-kinetic-bg border-b border-slate-100 px-5 py-4">
           <p className="cc-section-label">Coach Agent</p>
           <h1 className="mt-1 text-2xl font-semibold">AI Coach Chat</h1>
           <p className="mt-1 text-sm text-muted">Ask general sports questions or attach a synced ride for context. Not medical advice.</p>
@@ -78,7 +85,7 @@ export function CoachChat() {
           {messages.length === 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {prompts.map((prompt) => (
-                <button key={prompt} onClick={() => setDraft(prompt)} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-left text-sm font-medium transition hover:-translate-y-0.5 hover:border-brand/35 hover:bg-orange-50">
+                <button type="button" key={prompt} onClick={() => setDraft(prompt)} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-left text-sm font-medium transition duration-200 ease-out hover:border-brand/35 hover:bg-orange-50 active:scale-[0.99]">
                   {prompt}
                 </button>
               ))}

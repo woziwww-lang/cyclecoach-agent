@@ -106,6 +106,30 @@ pnpm dev:turbo       # run Next dev with Turbopack
 pnpm verify          # typecheck + tests + production build
 ```
 
+Quality and test tooling:
+
+```bash
+pnpm format          # Biome formatter, writes changes
+pnpm format:check    # Biome formatter check only
+pnpm lint            # Biome lint only
+pnpm typecheck       # TypeScript check
+pnpm test            # Vitest unit/component tests
+pnpm test:e2e        # Playwright E2E and accessibility smoke tests
+pnpm quality:unused  # Knip unused files/dependencies/exports audit
+```
+
+Before running Playwright for the first time on a fresh machine:
+
+```bash
+pnpm playwright:install
+```
+
+Tooling intentionally not initialized yet:
+
+- `shadcn init`: skipped because the app already has lightweight UI primitives and this command would rewrite design-system assumptions.
+- Storybook: skipped until component APIs stabilize.
+- Sentry wizard: skipped until there is a deployed environment and DSN/project choice.
+
 End-to-end local validation:
 
 ```bash

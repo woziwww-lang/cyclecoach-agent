@@ -5,8 +5,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: "#FC4C02",
-        green: "#19A974",
+        brand: "#F97316",
+        green: "#22C55E",
+        electric: "#14B8A6",
+        sky: "#0EA5E9",
         ink: "#111827",
         muted: "#6B7280",
         panel: "#FFFFFF",

@@ -9,6 +9,7 @@ import { generateRidePlan } from "@/features/planner/services/ride-plan-generato
 import type { RecentTrainingSummary, RidePlanInput } from "@/features/planner/schemas/ride-plan.schema";
 import { useStravaStatusQuery } from "@/lib/api/strava";
 import { ErrorState } from "@/components/ui/error-state";
+import { PlannerIcon } from "@/components/ui/icons";
 
 const initialInput: RidePlanInput = {
   durationMinutes: 90,
@@ -53,12 +54,19 @@ export function PlanNextRidePage() {
 
   return (
     <main className="cc-container space-y-5">
-      <section className="cc-card-muted px-5 py-5 md:px-6">
-        <p className="cc-section-label">Next workout</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">Plan Next Ride</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-          Build a practical next-ride plan from your time budget, training goal, readiness, and optional recent Strava context.
-        </p>
+      <section className="cc-kinetic-bg rounded-[1.5rem] border border-slate-200/80 bg-white/80 px-5 py-5 shadow-[0_14px_44px_rgba(15,23,42,0.06)] md:px-6">
+        <div className="flex gap-4">
+          <span className="cc-icon-tile bg-white text-brand">
+            <PlannerIcon className="size-5" />
+          </span>
+          <div>
+            <p className="cc-section-label">Next workout</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">Plan Next Ride</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+              Build a practical next-ride plan from your time budget, training goal, readiness, and optional recent Strava context.
+            </p>
+          </div>
+        </div>
       </section>
 
       <div className="grid items-start gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">

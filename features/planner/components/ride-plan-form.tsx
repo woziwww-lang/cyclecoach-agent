@@ -56,6 +56,7 @@ export function RidePlanForm({
           <div className="mt-3 flex flex-wrap gap-2">
             {durationOptions.map((option) => (
               <button
+                type="button"
                 key={option.value}
                 onClick={() => update({ durationMinutes: option.value })}
                 className={pillClass(value.durationMinutes === option.value)}
@@ -82,10 +83,11 @@ export function RidePlanForm({
           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             {goals.map((goal) => (
               <button
+                type="button"
                 key={goal.value}
                 onClick={() => update({ goal: goal.value })}
                 className={clsx(
-                  "rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:border-brand/35",
+                  "rounded-2xl border p-3 text-left transition duration-200 ease-out hover:border-brand/35 active:scale-[0.99]",
                   value.goal === goal.value ? "border-brand/30 bg-orange-50" : "border-slate-200 bg-white"
                 )}
               >
@@ -100,7 +102,7 @@ export function RidePlanForm({
           <h2 className="text-sm font-semibold">Current state</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {readinessOptions.map((option) => (
-              <button key={option.value} onClick={() => update({ readiness: option.value })} className={pillClass(value.readiness === option.value)}>
+              <button type="button" key={option.value} onClick={() => update({ readiness: option.value })} className={pillClass(value.readiness === option.value)}>
                 {option.label}
               </button>
             ))}
@@ -130,7 +132,7 @@ export function RidePlanForm({
 
 function pillClass(active: boolean) {
   return clsx(
-    "rounded-2xl border px-3 py-2 text-sm font-semibold transition active:scale-[0.98]",
-    active ? "border-brand/30 bg-orange-50 text-brand" : "border-slate-200 bg-white text-ink hover:bg-slate-50"
+    "rounded-2xl border px-3 py-2 text-sm font-semibold transition duration-200 ease-out active:scale-[0.98]",
+    active ? "border-brand/30 bg-orange-50 text-brand shadow-[inset_0_0_0_1px_rgba(249,115,22,0.12)]" : "border-slate-200 bg-white text-ink hover:border-brand/20 hover:bg-orange-50/60"
   );
 }
