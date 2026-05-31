@@ -11,8 +11,9 @@ import { useCoachChatMutation } from "@/lib/api/coach";
 import { useLlmHealthQuery } from "@/lib/api/settings";
 import { useChatStore } from "@/lib/stores/use-chat-store";
 import { CoachIcon } from "@/components/ui/icons";
+import type { CoachChatResponse } from "@/lib/api/coach";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; structured?: CoachChatResponse["structured"] };
 
 const prompts = [
   "Analyze my latest ride",
@@ -39,7 +40,7 @@ export function CoachChat() {
     setDraft("");
     try {
       const response = await chatMutation.mutateAsync({ message, activityId });
-      setMessages((current) => [...current, { role: "assistant", content: response.message }]);
+      setMessages((current) => [...current, { role: "assistant", content: response.message, structured: response.structured }]);
     } catch (error) {
       setMessages((current) => [
         ...current,
@@ -102,7 +103,7 @@ export function CoachChat() {
               ))}
             </div>
           ) : (
-            messages.map((message, index) => <ChatMessage key={`${message.role}-${index}`} role={message.role} content={message.content} />)
+            messages.map((message, index) => <ChatMessage key={`${message.role}-${index}`} role={message.role} content={message.content} structured={message.structured} />)
           )}
           {chatMutation.isPending ? <ChatSkeleton /> : null}
         </div>

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         messages: {
           create: [
             { role: "user", content: input.message },
-            { role: "assistant", content: response.message }
+            { role: "assistant", content: JSON.stringify(response.structured) }
           ]
         }
       }

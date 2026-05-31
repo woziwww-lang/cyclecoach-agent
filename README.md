@@ -33,6 +33,10 @@ Fill `.env`:
 STRAVA_CLIENT_ID=...
 STRAVA_CLIENT_SECRET=...
 STRAVA_REDIRECT_URI=http://localhost:3000/api/auth/strava/callback
+ORS_API_KEY=                 # optional, enables OpenRouteService route candidates
+ENABLE_EXTERNAL_ROUTE_SEARCH=true
+ENABLE_RIDER_PROFILE=true
+ENABLE_CHARTS=true
 ```
 
 Start Ollama. This only starts the Ollama server; it does not choose a model:
@@ -191,6 +195,8 @@ Current coverage starts with global navigation and Home. The same dictionary pat
 
 See [`docs/ui-ux.md`](docs/ui-ux.md) for page responsibilities, final Home cards, visual tokens, and UX state rules.
 
+For a full interview-ready engineering walkthrough, see [`docs/engineering-guide.md`](docs/engineering-guide.md).
+
 ## State management
 
 - UI state: Zustand stores in `lib/stores`.
@@ -198,6 +204,60 @@ See [`docs/ui-ux.md`](docs/ui-ux.md) for page responsibilities, final Home cards
 - Settings forms: React Hook Form + Zod.
 - Dashboard state: the latest synced ride is selected by default; users switch rides inside the dashboard.
 - AI state: loading skeletons and rule-based fallback if Ollama is offline or returns invalid JSON.
+
+## Route intelligence
+
+Plan Next Ride uses route candidates from multiple sources:
+
+```text
+previous Strava activities -> OpenRouteService when configured -> Tokyo/Kanto route catalog -> manual fallback
+```
+
+External route search is optional. Without `ORS_API_KEY`, the app still works locally and recommends from synced Strava routes plus the built-in catalog. The OpenRouteService adapter uses the official API path; the project does not scrape Strava, Komoot, RideWithGPS, or other route websites.
+
+Route provider code lives in:
+
+```text
+features/routes/providers
+features/routes/services
+features/routes/data
+```
+
+Planner logic remains deterministic first. Ollama can refine wording, but it must not invent route geometry, weather, FTP, HR zones, or power zones.
+
+## Analytics
+
+Dashboard includes a lightweight Rider Type Analyzer and recent load charts. These are computed from locally cached Strava activities:
+
+- rider type: climber, endurance, rouleur, punchy, base builder, or unknown
+- weekly distance/elevation/time load
+- recent elevation trend
+
+Charts use Recharts and show missing-data states instead of guessing. Power-specific charts should only be added when enough power stream data exists.
+
+Analytics code lives in:
+
+```text
+features/analytics/services
+features/analytics/components
+features/analytics/schemas
+```
+
+## Coach response structure
+
+Coach Chat returns structured JSON for product-grade rendering:
+
+```text
+Direct Answer
+Based on Recent Rides
+Recommendation
+Why
+What To Watch
+Next Action
+Confidence / Missing Data
+```
+
+If Ollama is offline or returns invalid JSON, CycleCoach uses a conservative rule-based structured fallback.
 
 ## SQLite now, PostGIS later
 

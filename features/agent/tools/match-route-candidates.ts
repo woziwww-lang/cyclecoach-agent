@@ -80,8 +80,11 @@ function scoreCandidate(candidate: RouteCandidate, input: RidePlanInput, memory:
 function routePreferenceFits(candidate: RouteCandidate, preference: RidePlanInput["routePreference"]) {
   if (preference === "not_sure") return false;
   if (preference === "previous_route") return candidate.source === "previous_activity";
-  if (preference === "known_route") return candidate.source === "route_catalog";
+  if (preference === "external_route") return candidate.source === "external_api";
+  if (preference === "known_route" || preference === "catalog_route") return candidate.source === "route_catalog";
   if (preference === "recovery") return candidate.routeType === "recovery" || candidate.difficulty === "easy";
+  if (preference === "low_traffic") return candidate.routeType === "flat" || candidate.difficulty === "easy";
+  if (preference === "riverside") return /tamagawa|arakawa/i.test(candidate.name);
   return candidate.routeType === preference;
 }
 
@@ -97,6 +100,7 @@ function manualFallbackCandidate(input: RidePlanInput, memory: TrainingMemory): 
     id: "manual-fallback",
     name: tired ? "Short familiar recovery loop" : "Familiar low-risk local route",
     source: "manual_fallback",
+    provider: "fallback",
     region: null,
     routeType: tired ? "recovery" : input.goal === "climbing" ? "rolling" : "endurance",
     distanceKm: null,
@@ -105,6 +109,8 @@ function manualFallbackCandidate(input: RidePlanInput, memory: TrainingMemory): 
     difficulty: tired ? "easy" : "unknown",
     suitableGoals: [input.goal],
     polyline: null,
+    mapPreviewAvailable: false,
+    routeUrl: null,
     basedOnActivityId: null,
     safetyNotes: ["Use a route you already know and can shorten if conditions or legs feel worse."],
     notes: "No usable route history or catalog match was available, so this is a conservative manual route type.",

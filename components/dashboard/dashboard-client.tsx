@@ -12,6 +12,7 @@ import { useActivitiesQuery, useSyncStravaMutation } from "@/lib/api/activities"
 import { useStravaStatusQuery } from "@/lib/api/strava";
 import { useDashboardStore } from "@/lib/stores/use-dashboard-store";
 import { DashboardIcon } from "@/components/ui/icons";
+import { DashboardAnalyticsPanel } from "@/features/analytics/components/dashboard-analytics-panel";
 
 export function DashboardClient() {
   const { selectedActivityId, setSelectedActivityId } = useDashboardStore();
@@ -78,6 +79,7 @@ export function DashboardClient() {
       ) : (
         <>
           <DashboardSummary activities={activities} />
+          <DashboardAnalyticsPanel />
           <div className="grid items-start gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
             <ActivityListPanel activities={activities} selectedActivityId={selectedActivityId} onSelect={setSelectedActivityId} />
             <ActivityDetailPanel activityId={selectedActivityId ?? activities[0]?.id ?? null} />

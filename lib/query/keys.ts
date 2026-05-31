@@ -5,5 +5,8 @@ export const queryKeys = {
   trainingMemory: ["agent", "training-memory"] as const,
   activities: ["strava", "activities"] as const,
   activity: (id: string) => ["strava", "activities", id] as const,
-  analysis: (id: string) => ["activities", id, "analysis"] as const
+  analysis: (id: string) => ["activities", id, "analysis"] as const,
+  analyticsDashboard: ["analytics", "dashboard"] as const,
+  riderProfile: ["analytics", "rider-profile"] as const,
+  trainingLoad: ["analytics", "training-load"] as const
 };

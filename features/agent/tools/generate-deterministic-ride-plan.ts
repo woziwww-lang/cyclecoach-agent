@@ -3,7 +3,7 @@ import type { RouteCandidate } from "@/features/agent/schemas/route-candidate.sc
 import type { TrainingMemory } from "@/features/agent/schemas/training-memory.schema";
 
 export function generateDeterministicRidePlan(input: RidePlanInput, memory: TrainingMemory, candidates: RouteCandidate[]): RidePlan {
-  const route = candidates[0];
+  const route = candidates[0] ?? buildEmergencyFallback(input);
   const fatigueRisk = input.readiness === "tired" || memory.fatigueSignals.length > 0;
   const climbingOverload = memory.last7Days.elevationM >= 1200 && input.goal === "climbing";
   const shouldRecover = fatigueRisk || climbingOverload;
@@ -20,13 +20,17 @@ export function generateDeterministicRidePlan(input: RidePlanInput, memory: Trai
     recommendedRoute: {
       name: route.name,
       source: route.source,
+      provider: route.provider,
       region: route.region,
       routeType: route.routeType,
       estimatedDistanceKm: route.distanceKm,
       estimatedElevationM: route.elevationM,
       estimatedDurationMinutes: route.durationMinutes ?? duration,
+      difficulty: route.difficulty,
       basedOnActivityId: route.basedOnActivityId,
       polyline: route.polyline,
+      mapPreviewAvailable: route.mapPreviewAvailable || Boolean(route.polyline),
+      routeUrl: route.routeUrl,
       reason: route.scoreReasons.slice(0, 3).join("; ") || route.notes
     },
     trainingPurpose: purpose,
@@ -47,6 +51,11 @@ export function generateDeterministicRidePlan(input: RidePlanInput, memory: Trai
     nutrition: buildNutrition(duration, purpose),
     recovery: buildRecovery(shouldRecover, purpose),
     safetyNotes: [...route.safetyNotes, "Check weather, daylight, and road conditions before leaving.", "This is training guidance, not medical advice."],
+    alternatives: candidates.slice(1, 4).map((candidate) => ({
+      name: candidate.name,
+      reason: candidate.scoreReasons[0] ?? candidate.notes,
+      difficulty: candidate.difficulty
+    })),
     confidence: {
       level: confidenceLevel(memory, route),
       reason: confidenceReason(memory, route)
@@ -58,6 +67,7 @@ export function generateDeterministicRidePlan(input: RidePlanInput, memory: Trai
 function mapGoalToPurpose(goal: RidePlanInput["goal"]): RidePlan["trainingPurpose"] {
   if (goal === "ftp") return "tempo";
   if (goal === "fat_loss") return "endurance";
+  if (goal === "route_exploration") return "mixed";
   return goal;
 }
 
@@ -86,7 +96,7 @@ function buildMainSet(input: RidePlanInput, minutes: number, route: RouteCandida
       }
     ];
   }
-  if (input.goal === "ftp") {
+  if (input.goal === "ftp" || input.goal === "tempo") {
     const block = Math.max(12, Math.floor((minutes - 8) / 2));
     return [
       { title: "Controlled tempo block 1", durationMinutes: block, intensity: "Moderate-hard", description: `Use steady sections of ${route.name}; avoid traffic-heavy segments.` },
@@ -112,6 +122,30 @@ function buildMainSet(input: RidePlanInput, minutes: number, route: RouteCandida
       description: `Ride ${route.name} smoothly. Keep the effort sustainable and avoid chasing segments.`
     }
   ];
+}
+
+function buildEmergencyFallback(input: RidePlanInput): RouteCandidate {
+  return {
+    id: "emergency-fallback",
+    name: "Flexible familiar local route",
+    source: "manual_fallback",
+    provider: "fallback",
+    region: input.startLocation.label,
+    routeType: input.goal === "climbing" ? "rolling" : "endurance",
+    distanceKm: null,
+    elevationM: null,
+    durationMinutes: input.durationMinutes,
+    difficulty: "unknown",
+    suitableGoals: [input.goal],
+    polyline: null,
+    mapPreviewAvailable: false,
+    routeUrl: null,
+    basedOnActivityId: null,
+    safetyNotes: ["Choose a familiar route you can shorten safely."],
+    notes: "Fallback route used because no candidate source returned data.",
+    score: 0,
+    scoreReasons: ["fallback route"]
+  };
 }
 
 function buildWhy(input: RidePlanInput, memory: TrainingMemory, route: RouteCandidate, shouldRecover: boolean) {
@@ -145,12 +179,14 @@ function buildRecovery(shouldRecover: boolean, purpose: RidePlan["trainingPurpos
 
 function confidenceLevel(memory: TrainingMemory, route: RouteCandidate): RidePlan["confidence"]["level"] {
   if (route.source === "previous_activity" && memory.latestRide && memory.missingData.length <= 1) return "high";
+  if (route.source === "external_api" && route.mapPreviewAvailable) return "medium";
   if (route.source !== "manual_fallback" && memory.last30Days.rideCount > 0) return "medium";
   return "low";
 }
 
 function confidenceReason(memory: TrainingMemory, route: RouteCandidate) {
   if (route.source === "previous_activity") return "Uses your recent training memory and a mapped route from your own Strava history.";
+  if (route.source === "external_api") return "Uses the selected start area and an external route provider, with training load still handled conservatively.";
   if (route.source === "route_catalog") return "Uses your recent training memory plus a built-in route catalog candidate.";
   if (memory.last30Days.rideCount === 0) return "No recent Strava activity was available, so this is a lower-confidence manual recommendation.";
   return "Limited route data was available, so route specificity is lower.";

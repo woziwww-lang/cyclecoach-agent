@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const RouteTypeSchema = z.enum(["flat", "rolling", "climbing", "endurance", "recovery", "mixed", "unknown"]);
+export const RouteTypeSchema = z.enum(["flat", "rolling", "climbing", "endurance", "recovery", "interval_loop", "mixed", "unknown"]);
 
 export const CompactActivityMemorySchema = z.object({
   activityId: z.string(),

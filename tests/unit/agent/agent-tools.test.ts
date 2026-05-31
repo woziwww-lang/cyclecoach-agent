@@ -6,6 +6,11 @@ import { generateDeterministicRidePlan } from "@/features/agent/tools/generate-d
 import { matchRouteCandidates } from "@/features/agent/tools/match-route-candidates";
 import { summarizeTrainingLoad } from "@/features/agent/tools/summarize-training-load";
 
+const basePlanInput = {
+  startLocation: { type: "unknown" as const, label: null, lat: null, lng: null },
+  weatherAware: false
+};
+
 describe("agent training memory and route planning", () => {
   it("summarizes recent load and detects route memory", () => {
     const memory = summarizeTrainingLoad([
@@ -24,12 +29,13 @@ describe("agent training memory and route planning", () => {
       activity({ name: "Tamagawa endurance route", distanceMeters: 65000, elevation: 120, movingTime: 8400, polyline: "abc" })
     ]);
     const candidates = matchRouteCandidates(
-      { durationMinutes: 120, goal: "endurance", readiness: "normal", routePreference: "previous_route", useLatestRideContext: true },
+      { ...basePlanInput, durationMinutes: 120, goal: "endurance", readiness: "normal", routePreference: "previous_route", useLatestRideContext: true },
       memory,
       memory.routeMemory.map((route) => ({
         id: route.activityId,
         name: route.name,
         source: "previous_activity",
+        provider: "strava_activity",
         region: null,
         routeType: route.routeType,
         distanceKm: route.distanceKm,
@@ -38,6 +44,8 @@ describe("agent training memory and route planning", () => {
         difficulty: "easy",
         suitableGoals: ["endurance", "recovery"],
         polyline: route.polyline,
+        mapPreviewAvailable: Boolean(route.polyline),
+        routeUrl: null,
         basedOnActivityId: route.activityId,
         safetyNotes: [],
         notes: route.effortSummary,
@@ -54,13 +62,13 @@ describe("agent training memory and route planning", () => {
   it("turns tired climbing requests into recovery-first plans", () => {
     const memory = emptyTrainingMemory();
     const candidates = matchRouteCandidates(
-      { durationMinutes: 120, goal: "climbing", readiness: "tired", routePreference: "climbing", useLatestRideContext: false },
+      { ...basePlanInput, durationMinutes: 120, goal: "climbing", readiness: "tired", routePreference: "climbing", useLatestRideContext: false },
       memory,
       [],
       getRouteCatalog()
     );
     const plan = generateDeterministicRidePlan(
-      { durationMinutes: 120, goal: "climbing", readiness: "tired", routePreference: "climbing", useLatestRideContext: false },
+      { ...basePlanInput, durationMinutes: 120, goal: "climbing", readiness: "tired", routePreference: "climbing", useLatestRideContext: false },
       memory,
       candidates
     );

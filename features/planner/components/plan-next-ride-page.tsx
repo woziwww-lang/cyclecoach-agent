@@ -19,6 +19,8 @@ const initialInput: RidePlanInput = {
   goal: "endurance",
   readiness: "normal",
   routePreference: "not_sure",
+  startLocation: { type: "unknown", label: null, lat: null, lng: null },
+  weatherAware: false,
   useLatestRideContext: true
 };
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PlannerGoalSchema, ReadinessSchema, RouteCandidateSchema, RoutePreferenceSchema } from "@/features/agent/schemas/route-candidate.schema";
+import { PlannerGoalSchema, ReadinessSchema, RouteCandidateSchema, RoutePreferenceSchema, RouteProviderSchema, RouteSourceSchema } from "@/features/agent/schemas/route-candidate.schema";
 import { RouteTypeSchema, TrainingMemorySchema } from "@/features/agent/schemas/training-memory.schema";
 
 export const RidePlanInputSchema = z.object({
@@ -7,6 +7,13 @@ export const RidePlanInputSchema = z.object({
   goal: PlannerGoalSchema,
   readiness: ReadinessSchema,
   routePreference: RoutePreferenceSchema.default("not_sure"),
+  startLocation: z.object({
+    type: z.enum(["profile_default", "manual", "recent_activity_start", "unknown"]).default("unknown"),
+    label: z.string().nullable().default(null),
+    lat: z.number().nullable().default(null),
+    lng: z.number().nullable().default(null)
+  }).default({ type: "unknown", label: null, lat: null, lng: null }),
+  weatherAware: z.boolean().default(false),
   useLatestRideContext: z.boolean().default(true)
 });
 
@@ -22,17 +29,21 @@ export const RidePlanSchema = z.object({
   summary: z.string(),
   recommendedRoute: z.object({
     name: z.string(),
-    source: z.enum(["previous_activity", "route_catalog", "manual_fallback"]),
+    source: RouteSourceSchema,
+    provider: RouteProviderSchema,
     region: z.string().nullable(),
     routeType: RouteTypeSchema,
     estimatedDistanceKm: z.number().nullable(),
     estimatedElevationM: z.number().nullable(),
     estimatedDurationMinutes: z.number().int(),
+    difficulty: z.enum(["easy", "moderate", "hard", "unknown"]),
     basedOnActivityId: z.string().nullable(),
     polyline: z.string().nullable(),
+    mapPreviewAvailable: z.boolean(),
+    routeUrl: z.string().nullable(),
     reason: z.string()
   }),
-  trainingPurpose: z.enum(["recovery", "endurance", "tempo", "climbing", "ftp", "long_ride", "rest", "mixed"]),
+  trainingPurpose: z.enum(["recovery", "endurance", "tempo", "climbing", "sprint", "ftp", "long_ride", "rest", "mixed"]),
   intensity: z.enum(["easy", "moderate", "hard"]),
   workoutStructure: z.object({
     warmup: z.object({
@@ -50,6 +61,11 @@ export const RidePlanSchema = z.object({
   nutrition: z.array(z.string()),
   recovery: z.array(z.string()),
   safetyNotes: z.array(z.string()),
+  alternatives: z.array(z.object({
+    name: z.string(),
+    reason: z.string(),
+    difficulty: z.enum(["easy", "moderate", "hard", "unknown"])
+  })).default([]),
   confidence: z.object({
     level: z.enum(["high", "medium", "low"]),
     reason: z.string()

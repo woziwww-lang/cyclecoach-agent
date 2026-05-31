@@ -21,6 +21,8 @@ export function RidePlanResult({
             <StatusPill tone="orange">{plan.trainingPurpose.replace("_", " ")}</StatusPill>
             <StatusPill>{plan.intensity}</StatusPill>
             <StatusPill>{plan.recommendedRoute.source.replace("_", " ")}</StatusPill>
+            <StatusPill>{plan.recommendedRoute.provider}</StatusPill>
+            <StatusPill tone={plan.recommendedRoute.difficulty === "hard" ? "red" : plan.recommendedRoute.difficulty === "moderate" ? "orange" : "green"}>{plan.recommendedRoute.difficulty}</StatusPill>
             <StatusPill tone={plan.confidence.level === "high" ? "green" : plan.confidence.level === "medium" ? "orange" : "slate"}>{plan.confidence.level} confidence</StatusPill>
             {fallbackUsed || plan.fallbackUsed ? <StatusPill>rule fallback</StatusPill> : null}
           </div>
@@ -33,6 +35,7 @@ export function RidePlanResult({
           <Metric label="Distance" value={plan.recommendedRoute.estimatedDistanceKm ? `${plan.recommendedRoute.estimatedDistanceKm.toFixed(1)} km` : "flexible"} />
           <Metric label="Elevation" value={plan.recommendedRoute.estimatedElevationM ? `${Math.round(plan.recommendedRoute.estimatedElevationM)} m` : "unknown"} />
           <Metric label="Duration" value={`${plan.recommendedRoute.estimatedDurationMinutes} min`} />
+          <Metric label="Map preview" value={plan.recommendedRoute.mapPreviewAvailable ? "available" : "not available"} />
         </div>
       </article>
 
@@ -56,6 +59,11 @@ export function RidePlanResult({
             Based on one of your previous Strava routes. Open Dashboard to inspect the original mapped ride.
           </p>
         ) : null}
+        {plan.recommendedRoute.source === "external_api" ? (
+          <p className="mt-3 rounded-2xl bg-blue-50 p-3 text-sm text-blue-800">
+            Generated from an external routing provider. Verify road suitability, traffic, and current conditions before riding.
+          </p>
+        ) : null}
       </article>
 
       <article className="cc-card p-5">
@@ -75,6 +83,22 @@ export function RidePlanResult({
 
       <BulletList title="Safety notes" items={plan.safetyNotes} tone="amber" />
       {plan.missingData.length ? <BulletList title="Missing data" items={plan.missingData} tone="slate" /> : null}
+      {plan.alternatives.length ? (
+        <article className="cc-card p-5">
+          <p className="cc-section-label">Plan alternatives</p>
+          <div className="mt-3 grid gap-2">
+            {plan.alternatives.map((alternative) => (
+              <div key={`${alternative.name}-${alternative.reason}`} className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-semibold">{alternative.name}</p>
+                  <StatusPill tone={alternative.difficulty === "hard" ? "red" : alternative.difficulty === "moderate" ? "orange" : "green"}>{alternative.difficulty}</StatusPill>
+                </div>
+                <p className="mt-1 text-sm text-muted">{alternative.reason}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      ) : null}
 
       {routeCandidates.length > 1 ? (
         <article className="cc-card p-5">

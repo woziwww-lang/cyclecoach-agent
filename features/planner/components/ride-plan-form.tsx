@@ -15,9 +15,12 @@ const goals: Array<{ value: RidePlanInput["goal"]; title: string; description: s
   { value: "recovery", title: "Recovery", description: "Easy spin or rest-first guidance." },
   { value: "endurance", title: "Endurance / Z2", description: "Steady aerobic development." },
   { value: "climbing", title: "Climbing", description: "Controlled hill strength work." },
+  { value: "tempo", title: "Tempo", description: "Sustainable pressure without racing." },
   { value: "ftp", title: "FTP / Tempo", description: "Focused but not reckless intensity." },
+  { value: "sprint", title: "Sprint", description: "Short neuromuscular efforts when fresh." },
   { value: "fat_loss", title: "Fat loss", description: "Repeatable aerobic volume." },
-  { value: "long_ride", title: "Weekend long ride", description: "Durability and fueling practice." }
+  { value: "long_ride", title: "Weekend long ride", description: "Durability and fueling practice." },
+  { value: "route_exploration", title: "Route exploration", description: "Discover a practical new route." }
 ];
 
 const readinessOptions: Array<{ value: RidePlanInput["readiness"]; label: string }> = [
@@ -29,9 +32,12 @@ const readinessOptions: Array<{ value: RidePlanInput["readiness"]; label: string
 
 const routePreferences: Array<{ value: RidePlanInput["routePreference"]; title: string; description: string }> = [
   { value: "previous_route", title: "Previous route", description: "Prefer a familiar Strava route." },
-  { value: "known_route", title: "Known route", description: "Use the Tokyo/Kanto catalog." },
+  { value: "catalog_route", title: "Catalog route", description: "Use the Tokyo/Kanto catalog." },
+  { value: "external_route", title: "Generated route", description: "Use a route API when configured." },
   { value: "flat", title: "Flat", description: "Keep terrain simple and steady." },
   { value: "climbing", title: "Climbing", description: "Look for elevation when suitable." },
+  { value: "riverside", title: "Riverside", description: "Favor Tamagawa or Arakawa style routes." },
+  { value: "low_traffic", title: "Low traffic", description: "Favor simpler low-risk route types." },
   { value: "recovery", title: "Recovery", description: "Low-risk, easy terrain." },
   { value: "not_sure", title: "Not sure", description: "Let CycleCoach decide." }
 ];
@@ -137,6 +143,50 @@ export function RidePlanForm({
             ))}
           </div>
         </div>
+
+        <div>
+          <h2 className="text-sm font-semibold">Start area for generated routes</h2>
+          <div className="mt-3 space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            <input
+              value={value.startLocation.label ?? ""}
+              onChange={(event) => update({ startLocation: { ...value.startLocation, type: event.target.value ? "manual" : "unknown", label: event.target.value || null } })}
+              placeholder="Optional label, e.g. Futako-Tamagawa"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand/60"
+            />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <input
+                type="number"
+                step="0.000001"
+                value={value.startLocation.lat ?? ""}
+                onChange={(event) => update({ startLocation: { ...value.startLocation, type: event.target.value ? "manual" : value.startLocation.type, lat: event.target.value ? Number(event.target.value) : null } })}
+                placeholder="Latitude"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand/60"
+              />
+              <input
+                type="number"
+                step="0.000001"
+                value={value.startLocation.lng ?? ""}
+                onChange={(event) => update({ startLocation: { ...value.startLocation, type: event.target.value ? "manual" : value.startLocation.type, lng: event.target.value ? Number(event.target.value) : null } })}
+                placeholder="Longitude"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand/60"
+              />
+            </div>
+            <p className="text-xs leading-5 text-muted">Optional. If no coordinates or API key are configured, CycleCoach falls back to your Strava routes and the local catalog.</p>
+          </div>
+        </div>
+
+        <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm">
+          <input
+            type="checkbox"
+            checked={value.weatherAware}
+            onChange={(event) => update({ weatherAware: event.target.checked })}
+            className="mt-1"
+          />
+          <span>
+            <span className="font-semibold">Weather-aware planning</span>
+            <span className="block text-muted">MVP placeholder for weather risk. It will not invent weather data.</span>
+          </span>
+        </label>
 
         <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm">
           <input
